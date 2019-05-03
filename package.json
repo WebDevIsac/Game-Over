@@ -1,0 +1,24 @@
+{
+  "name": "game-over",
+  "version": "1.0.0",
+  "description": "Game assignment using any js framework",
+  "main": "index.js",
+  "dependencies": {
+    "p5": "^0.8.0",
+    "parcel-bundler": "^1.12.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdrianJung/Game-Over.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AdrianJung/Game-Over/issues"
+  },
+  "homepage": "https://github.com/AdrianJung/Game-Over#readme"
+}

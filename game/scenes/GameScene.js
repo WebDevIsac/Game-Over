@@ -5,7 +5,7 @@ import EasyStar from 'easystarjs'
 
 export default class GameScene extends Phaser.Scene {
 	constructor() {
-		super('Game')
+		super()
 	}
 
 	preload() {

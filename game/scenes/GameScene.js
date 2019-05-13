@@ -24,12 +24,13 @@ export default class GameScene extends Phaser.Scene {
 		});
 	}
 
+	
 	create() {
 		this.towers = []; 
-
+		
 		this.finder = new EasyStar.js()
 
-
+		
 		this.map = this.make.tilemap({
 			key: 'map'
 		})
@@ -51,13 +52,14 @@ export default class GameScene extends Phaser.Scene {
 		this.marker.strokeRect(0, 0, 32, 32);
 		this.marker.lineStyle(3, 0xff4f78, 1);
 		this.marker.strokeRect(0, 0, 32, 32);
-
+		
 
 		let monster = this.add.sprite(180, 0, 'monster');
 		var timeline = this.tweens.createTimeline();
+		this.monster = monster;
 
-		let speed = 2000
-
+		let speed = 10000
+		
 		timeline.add({
 			targets: monster,
 			x: 180,
@@ -70,7 +72,7 @@ export default class GameScene extends Phaser.Scene {
 			x: 500,
 			duration: speed
 		});
-
+		
 		timeline.add({
 			targets: monster,
 			y: 360,
@@ -89,18 +91,37 @@ export default class GameScene extends Phaser.Scene {
 		});
 		monster.play('walk')
 		timeline.play();
-
+		
+		this.input.on('pointerup', this.addTower, this);
 	}
 	
+	
 	update() {
-		const worldPoint = this.input.activePointer;
-		const pointerTileXY = this.groundlayer.worldToTileXY(worldPoint.x, worldPoint.y);
-		const snapperWorldPoint = this.groundlayer.tileToWorldXY(pointerTileXY.x, pointerTileXY.y);
-		this.marker.setPosition(snapperWorldPoint.x, snapperWorldPoint.y);
-		
-		if (this.input.manager.activePointer.isDown) {
-			console.log('hello');
-			this.towers.push(this.add.image(snapperWorldPoint.x + 16, snapperWorldPoint.y + 16, 'tower'));
-		}
+		this.worldPoint = this.input.activePointer;
+		this.pointerTileXY = this.groundlayer.worldToTileXY(this.worldPoint.x, this.worldPoint.y);
+		this.snapperWorldPoint = this.groundlayer.tileToWorldXY(this.pointerTileXY.x, this.pointerTileXY.y);
+		this.marker.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
+
+		this.towers.map(tower => {
+			if (!tower.disabled) {
+				this.shoot(tower, this.monster);
+			}
+		});
+	}
+
+	addTower() {
+		let tower = this.add.image(this.snapperWorldPoint.x + 16, this.snapperWorldPoint.y + 16, 'tower');
+		tower.disabled = false;
+		this.towers.push(tower);
+		console.log(this.towers);
+	}
+
+	shoot(tower, monster) {
+		console.log(tower);
+		console.log(monster);
+		tower.disabled = true;
+		setTimeout(() => {
+			console.log(tower);
+		}, 500);
 	}
 }

@@ -45,10 +45,8 @@ export default class GameScene extends Phaser.Scene {
 		this.marker.setPosition(snapperWorldPoint.x, snapperWorldPoint.y);
 		
 		if (this.input.manager.activePointer.isDown) {
+			console.log('hello');
 			this.towers.push(this.add.image(snapperWorldPoint.x + 16, snapperWorldPoint.y + 16, 'tower'));
 		}
-		console.log(this.towers);
-
-
 	}
 }

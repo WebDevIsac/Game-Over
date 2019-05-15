@@ -1,9 +1,15 @@
 import Bullet from './Bullet';
 
-export default class Tower extends Phaser.GameObjects.Image {
-    constructor(scene, x, y, texture, frame) {
-        super(scene, x, y, texture, frame);
-        scene.add.existing(this);
+export default class Tower extends Phaser.GameObjects.Sprite {
+    constructor(config) {
+        super(
+            config.scene,
+            config.x,
+            config.y,
+            config.key
+        );
+        this.scene = config.scene
+        this.scene.add.existing(this);
     }
 
     checkForEnemies() {
@@ -19,11 +25,10 @@ export default class Tower extends Phaser.GameObjects.Image {
 
     shoot(tower, monster) {
 		tower.disabled = true;
-		console.log(monster);
         let bullet = new Bullet({
             scene: this.scene,
             x: tower.x,
-            y: tower.y,
+            y: tower.y - 12,
             key: 'bullet'
         });
         // console.log(bullet);
@@ -31,7 +36,7 @@ export default class Tower extends Phaser.GameObjects.Image {
 			targets: bullet,
 			x: monster.x,
 			y: monster.y,
-			duration: 150,
+			duration: 300,
 			ease: "Linear",
 			// easeParams: [1.5, 0.5],
 			onComplete: function() {
@@ -42,7 +47,6 @@ export default class Tower extends Phaser.GameObjects.Image {
 					monster.destroy();
 					// }
 				}, 10);
-				console.log(monster);
 			}
 		});
 		

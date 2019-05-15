@@ -1,127 +1,104 @@
+// Assets
 import map from '../assets/tilemaps/map.json'
 import tiles from '../assets/tilemaps/ground-plates.png'
 import tower from '../assets/Tower-32.png'
+import bullet from '../assets/bullet.png'
 import monster from '../assets/sprites/monster39x40.png'
-import EasyStar from 'easystarjs'
+
+// Classes
+import Enemy from './classes/Enemy';
+import Tower from './classes/Tower';
+
 
 export default class GameScene extends Phaser.Scene {
 	constructor() {
-		super()
+		super({
+			key: 'GameScene',
+		});
 	}
 
 	preload() {
-		this.marker; 
-
-		this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-		
+		// Load map 
 		this.load.image('ground-plates', tiles);
 		this.load.tilemapTiledJSON('map', map);
-		this.load.image('tower', tower);
 
+		// Load tower and bullet
+		this.load.image('tower', tower);
+		this.load.spritesheet('bullet', bullet, {
+			frameWidth: 10,
+			frameHeight: 10
+		});
+
+		// Load monster
 		this.load.spritesheet('monster', monster, {
 			frameWidth: 39,
 			frameHeight: 40,
 		});
 	}
-
 	
 	create() {
-		this.towers = []; 
-		
-		this.finder = new EasyStar.js()
-
-		
+		// Create map
 		this.map = this.make.tilemap({
 			key: 'map'
 		})
 
-		// Walkanimation for sprite
-		const monsterAnimation = this.anims.create({
-			key: 'walk',
-			frames: this.anims.generateFrameNumbers('monster'),
-			repeat: -1
-		});
-
-		// layers
+		// Set tiles
 		this.groundtiles = this.map.addTilesetImage('ground-plates')
-		// this.groundlayer.putTileAtWorldXY(34, 100, 100);
+
+		// Set layer
 		this.groundlayer = this.map.createStaticLayer('top', this.groundtiles, 0, 0)
 
+		// Set mouse marker
 		this.marker = this.add.graphics();
 		this.marker.lineStyle(5, 0xffffff, 1);
 		this.marker.strokeRect(0, 0, 32, 32);
 		this.marker.lineStyle(3, 0xff4f78, 1);
 		this.marker.strokeRect(0, 0, 32, 32);
 		
-
-		let monster = this.add.sprite(180, 0, 'monster');
-		var timeline = this.tweens.createTimeline();
-		this.monster = monster;
-
-		let speed = 10000
-		
-		timeline.add({
-			targets: monster,
-			x: 180,
-			y: 200,
-			duration: speed
+		// Towers group
+		let towers = this.add.group();
+		this.towers = towers;
+		this.arrayOfTowers = towers.getChildren();
+		this.input.on('pointerup', () => {
+			// Check if tower already exists on pointer position
+			if (!this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 16 && t.y === this.snapperWorldPoint.y + 16)) {
+				// Adding tower to towers group
+				let tower = new Tower(this, this.snapperWorldPoint.x + 16, this.snapperWorldPoint.y + 16, 'tower');
+				towers.add(tower);
+			}
 		});
 
-		timeline.add({
-			targets: monster,
-			x: 500,
-			duration: speed
-		});
-		
-		timeline.add({
-			targets: monster,
-			y: 360,
-			duration: speed
-		});
+		// Enemies group
+		let enemies = this.add.group();
+		this.enemies = enemies;
+		for (let i = 0; i < 10; i++) {
+			let enemy = new Enemy(this, 180, 0, 'monster');
+			enemies.add(enemy);
+		}
 
-		timeline.add({
-			targets: monster,
-			x: 310,
-			duration: speed
-		});
-		timeline.add({
-			targets: monster,
-			y: 660,
-			duration: speed
-		});
-		monster.play('walk')
-		timeline.play();
-		
-		this.input.on('pointerup', this.addTower, this);
+		 // BULLET
+		 this.anims.create({
+			key: 'bullet',
+			frames: [{
+			  key: 'bullet',
+			  frame: 0,
+			}],
+		  });
 	}
 	
-	
 	update() {
+		// Update mouse marker
 		this.worldPoint = this.input.activePointer;
 		this.pointerTileXY = this.groundlayer.worldToTileXY(this.worldPoint.x, this.worldPoint.y);
 		this.snapperWorldPoint = this.groundlayer.tileToWorldXY(this.pointerTileXY.x, this.pointerTileXY.y);
 		this.marker.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
 
-		this.towers.map(tower => {
-			if (!tower.disabled) {
-				this.shoot(tower, this.monster);
-			}
-		});
-	}
 
-	addTower() {
-		let tower = this.add.image(this.snapperWorldPoint.x + 16, this.snapperWorldPoint.y + 16, 'tower');
-		tower.disabled = false;
-		this.towers.push(tower);
-		console.log(this.towers);
-	}
+		if (this.towers.getLength() > 0 && this.enemies.getLength() > 0) {
+			this.arrayOfTowers.map(tower => {
+				tower.checkForEnemies();
+			});
+		}
 
-	shoot(tower, monster) {
-		console.log(tower);
-		console.log(monster);
-		tower.disabled = true;
-		setTimeout(() => {
-			console.log(tower);
-		}, 500);
 	}
 }

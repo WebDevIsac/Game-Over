@@ -1,8 +1,8 @@
 // Assets
 import map from '../assets/tilemaps/map.json'
 import tiles from '../assets/tilemaps/ground-plates.png'
-import tower from '../assets/Tower-32.png'
-import bullet from '../assets/bullet.png'
+import tower from '../assets/stone-tower-32px.png'
+import bullet from '../assets/bullets/small-spike.png'
 import monster from '../assets/sprites/monster39x40.png'
 
 // Classes
@@ -63,8 +63,14 @@ export default class GameScene extends Phaser.Scene {
 			// Check if tower already exists on pointer position
 			if (!this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 16 && t.y === this.snapperWorldPoint.y + 16)) {
 				// Adding tower to towers group
-				let tower = new Tower(this, this.snapperWorldPoint.x + 16, this.snapperWorldPoint.y + 16, 'tower');
+				let tower = new Tower({
+					scene: this,
+					x: this.snapperWorldPoint.x + 16, 
+					y: this.snapperWorldPoint.y + 16,
+					key: 'tower'
+				});
 				towers.add(tower);
+				console.log(tower);
 			}
 		});
 
@@ -77,13 +83,13 @@ export default class GameScene extends Phaser.Scene {
 		}
 
 		 // BULLET
-		 this.anims.create({
+		this.anims.create({
 			key: 'bullet',
 			frames: [{
-			  key: 'bullet',
-			  frame: 0,
+				key: 'bullet',
+				frame: 0
 			}],
-		  });
+		});
 	}
 	
 	update() {

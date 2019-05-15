@@ -1,6 +1,6 @@
 // Assets
-import map from '../assets/tilemaps/map.json'
-import tiles from '../assets/tilemaps/ground-plates.png'
+import map from '../assets/tilemaps/map-updated.json'
+import tiles from '../assets/tilemaps/tuxmon-sample-32px.png'
 import tower from '../assets/Tower-32.png'
 import bullet from '../assets/bullet.png'
 import monster from '../assets/sprites/monster39x40.png'
@@ -19,8 +19,8 @@ export default class GameScene extends Phaser.Scene {
 
 	preload() {
 		// Load map 
-		this.load.image('ground-plates', tiles);
-		this.load.tilemapTiledJSON('map', map);
+		this.load.image('tuxmon-sample-32px', tiles);
+		this.load.tilemapTiledJSON('map-updated', map);
 
 		// Load tower and bullet
 		this.load.image('tower', tower);
@@ -39,11 +39,11 @@ export default class GameScene extends Phaser.Scene {
 	create() {
 		// Create map
 		this.map = this.make.tilemap({
-			key: 'map'
+			key: 'map-updated'
 		})
 
 		// Set tiles
-		this.groundtiles = this.map.addTilesetImage('ground-plates')
+		this.groundtiles = this.map.addTilesetImage('tuxmon-sample-32px')
 
 		// Set layer
 		this.groundlayer = this.map.createStaticLayer('top', this.groundtiles, 0, 0)

@@ -1,6 +1,8 @@
-// Assets
+// Map assets
 import map from '../assets/tilemaps/map-updated.json'
 import tiles from '../assets/tilemaps/tuxmon-sample-32px.png'
+
+// Sprite and images
 import tower from '../assets/stone-tower-32px.png'
 import bullet from '../assets/bullets/small-spike.png'
 import monster from '../assets/sprites/monster39x40.png'
@@ -69,7 +71,7 @@ export default class GameScene extends Phaser.Scene {
 		this.input.on('pointerup', () => {
 			// Check if tile is allowed to place tower on
 			let currentTile = this.map.getTileAtWorldXY((this.snapperWorldPoint.x + 16), (this.snapperWorldPoint.y + 16))
-			if (currentTile.properties.collide !== true) {
+			if (currentTile.properties.collide === true) {
 				return;
 			}
 			// Check if tower already exists on pointer position
@@ -85,6 +87,7 @@ export default class GameScene extends Phaser.Scene {
 				key: 'tower'
 			});
 			towers.add(tower);
+			console.log(tower);
 		});
 		
 
@@ -93,14 +96,16 @@ export default class GameScene extends Phaser.Scene {
 
 		const spawn = (enemyObject) => {
 			enemyObject.children.entries.map(child => {
-				console.log(child);
-
 				path = this.add.path(child.x, child.y)
-					.lineTo(180, 200)
-					.lineTo(500, 200)
-					.lineTo(500, 360)
-					.lineTo(310, 360)
-					.lineTo(310, 640)
+					.lineTo(112, 304)
+					.lineTo(400, 304)
+					.lineTo(400, 80)
+					.lineTo(944, 80)
+					.lineTo(944, 720)
+					.lineTo(592, 720)
+					.lineTo(592, 496)
+					.lineTo(112, 496)
+					.lineTo(112, 784)
 
 				child.pathFollower = this.plugins.get('PathFollower').add(child, {
 					path: path, // path object
@@ -129,15 +134,15 @@ export default class GameScene extends Phaser.Scene {
 		let enemies = this.add.group();
 		this.enemies = enemies;
 		let startOffset = 0;
+		let startPosX = 112;
 
 		for (let i = 0; i < 10; i++) {
 			startOffset -= 400;
-			let enemy = new Enemy(this, 180, startOffset, 'monster');
+			let enemy = new Enemy(this, startPosX, startOffset, 'monster');
 			enemies.add(enemy);
 		}
 
 		// Spawn enemy function 
-		console.log(enemies);
 		spawn(enemies);
 
 		 // BULLET
@@ -159,7 +164,6 @@ export default class GameScene extends Phaser.Scene {
 
 
 		if (this.towers.getLength() > 0 && this.enemies.getLength() > 0) {
-			console.log(this.arrayOfTowers);
 			this.arrayOfTowers.map(tower => {
 				tower.checkForEnemies();
 			});

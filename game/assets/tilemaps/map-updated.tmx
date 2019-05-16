@@ -7,6 +7,11 @@
     <property name="collide" type="bool" value="true"/>
    </properties>
   </tile>
+  <tile id="173">
+   <properties>
+    <property name="collide" type="bool" value="true"/>
+   </properties>
+  </tile>
  </tileset>
  <layer id="2" name="top" width="32" height="24">
   <data encoding="csv">

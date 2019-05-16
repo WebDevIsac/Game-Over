@@ -2,12 +2,21 @@ import Phaser from 'phaser';
 
 import constants from './config/constants';
 import GameScene from './scenes/GameScene';
+import PathFollower from './assets/plugins/rexpathfollowerplugin.min';
 
 const config = {
 	type: Phaser.AUTO,
 	width: constants.WIDTH,
 	height: constants.HEIGHT,
-	scene: [GameScene]
+	scene: [GameScene],
+	plugins: {
+		global: [{
+				key: 'PathFollower',
+				plugin: PathFollower,
+				start: true
+			},
+		]
+	}
 };
 let game;
 const createGame = () => {

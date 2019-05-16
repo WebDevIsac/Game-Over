@@ -1,8 +1,10 @@
-// Assets
-import map from '../assets/tilemaps/map.json'
-import tiles from '../assets/tilemaps/ground-plates.png'
-import tower from '../assets/Tower-32.png'
-import bullet from '../assets/bullet.png'
+// Map assets
+import map from '../assets/tilemaps/map-updated.json'
+import tiles from '../assets/tilemaps/tuxmon-sample-32px.png'
+
+// Sprite and images
+import tower from '../assets/stone-tower-32px.png'
+import bullet from '../assets/bullets/small-spike.png'
 import monster from '../assets/sprites/monster39x40.png'
 
 // Classes
@@ -19,8 +21,8 @@ export default class GameScene extends Phaser.Scene {
 
 	preload() {
 		// Load map 
-		this.load.image('ground-plates', tiles);
-		this.load.tilemapTiledJSON('map', map);
+		this.load.image('tuxmon-sample-32px', tiles);
+		this.load.tilemapTiledJSON('map-updated', map);
 
 		// Load tower and bullet
 		this.load.image('tower', tower);
@@ -39,11 +41,18 @@ export default class GameScene extends Phaser.Scene {
 	create() {
 		// Create map
 		this.map = this.make.tilemap({
-			key: 'map'
+			key: 'map-updated'
 		})
 
+		// Walkanimation for sprite
+		const monsterAnimation = this.anims.create({
+			key: 'walk',
+			frames: this.anims.generateFrameNumbers('monster'),
+			repeat: -1
+		});
+
 		// Set tiles
-		this.groundtiles = this.map.addTilesetImage('ground-plates')
+		this.groundtiles = this.map.addTilesetImage('tuxmon-sample-32px')
 
 		// Set layer
 		this.groundlayer = this.map.createStaticLayer('top', this.groundtiles, 0, 0)
@@ -60,30 +69,90 @@ export default class GameScene extends Phaser.Scene {
 		this.towers = towers;
 		this.arrayOfTowers = towers.getChildren();
 		this.input.on('pointerup', () => {
-			// Check if tower already exists on pointer position
-			if (!this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 16 && t.y === this.snapperWorldPoint.y + 16)) {
-				// Adding tower to towers group
-				let tower = new Tower(this, this.snapperWorldPoint.x + 16, this.snapperWorldPoint.y + 16, 'tower');
-				towers.add(tower);
+			// Check if tile is allowed to place tower on
+			let currentTile = this.map.getTileAtWorldXY((this.snapperWorldPoint.x + 16), (this.snapperWorldPoint.y + 16))
+			if (currentTile.properties.collide === true) {
+				return;
 			}
+			// Check if tower already exists on pointer position
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 16 && t.y === this.snapperWorldPoint.y + 16)) {
+				return;
+			}
+			
+			// Adding tower to towers group
+			let tower = new Tower({
+				scene: this,
+				x: this.snapperWorldPoint.x + 16, 
+				y: this.snapperWorldPoint.y + 16,
+				key: 'tower'
+			});
+			towers.add(tower);
+			console.log(tower);
 		});
+		
 
-		// Enemies group
+		let offset = 0;
+		let path;
+
+		const spawn = (enemyObject) => {
+			enemyObject.children.entries.map(child => {
+				path = this.add.path(child.x, child.y)
+					.lineTo(112, 304)
+					.lineTo(400, 304)
+					.lineTo(400, 80)
+					.lineTo(944, 80)
+					.lineTo(944, 720)
+					.lineTo(592, 720)
+					.lineTo(592, 496)
+					.lineTo(112, 496)
+					.lineTo(112, 784)
+
+				child.pathFollower = this.plugins.get('PathFollower').add(child, {
+					path: path, // path object
+					t: 0, // t: 0~1
+					rotateToPath: false
+					// rotationOffset: 0,
+					// angleOffset: 0
+				});
+				offset += 1500
+
+				this.tweens.add({
+					targets: child.pathFollower,
+					t: 1,
+					ease: 'Linear', // 'Cubic', 'Elastic', 'Bounce', 'Back'
+					duration: 10000 + offset,
+					repeat: 0, // -1: infinity
+					yoyo: false,
+					onComplete: function () {
+						child.destroy()
+					}
+				});
+				child.play('walk')
+			})
+		}
+
 		let enemies = this.add.group();
 		this.enemies = enemies;
+		let startOffset = 0;
+		let startPosX = 112;
+
 		for (let i = 0; i < 10; i++) {
-			let enemy = new Enemy(this, 180, 0, 'monster');
+			startOffset -= 400;
+			let enemy = new Enemy(this, startPosX, startOffset, 'monster');
 			enemies.add(enemy);
 		}
 
+		// Spawn enemy function 
+		spawn(enemies);
+
 		 // BULLET
-		 this.anims.create({
+		this.anims.create({
 			key: 'bullet',
 			frames: [{
-			  key: 'bullet',
-			  frame: 0,
+				key: 'bullet',
+				frame: 0
 			}],
-		  });
+		});
 	}
 	
 	update() {
@@ -99,6 +168,5 @@ export default class GameScene extends Phaser.Scene {
 				tower.checkForEnemies();
 			});
 		}
-
 	}
 }

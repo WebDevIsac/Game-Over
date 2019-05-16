@@ -1,48 +1,55 @@
 import Bullet from './Bullet';
 
-export default class Tower extends Phaser.GameObjects.Image {
-    constructor(scene, x, y, texture, frame) {
-        super(scene, x, y, texture, frame);
-        scene.add.existing(this);
+export default class Tower extends Phaser.GameObjects.Sprite {
+    constructor(config) {
+        super(
+            config.scene,
+            config.x,
+            config.y,
+            config.key
+        );
+        this.scene = config.scene
+        this.scene.add.existing(this);
     }
 
     checkForEnemies() {
-        let enemy = this.scene.enemies.getFirst(true);
-        if (!this.disabled) {
-            let posY = this.y - enemy.y;
-            let posX = this.x - enemy.x;
-            if (posY < 100 && posY > -100 && posX < 100 && posX > -100) {
-                this.shoot(this, enemy);
-            } 
-        }
+        let towerRange = 100;
+        this.scene.enemies.children.entries.map(enemy => {
+            if (!this.disabled) {
+                let posY = this.y - enemy.y;
+                let posX = this.x - enemy.x;
+                if (posY < towerRange && posY > -towerRange && posX < towerRange && posX > -towerRange) {
+                    this.shoot(this, enemy, this.scene.enemies);
+                } 
+            }
+        });
     }
 
-    shoot(tower, monster) {
-		tower.disabled = true;
-		console.log(monster);
+    shoot(tower, enemy, enemyGroup) {
+        tower.disabled = true;
+        
         let bullet = new Bullet({
             scene: this.scene,
             x: tower.x,
-            y: tower.y,
+            y: tower.y - 12,
             key: 'bullet'
         });
-        // console.log(bullet);
+
 		let tween = this.scene.tweens.add({
 			targets: bullet,
-			x: monster.x,
-			y: monster.y,
+			x: enemy.x,
+			y: enemy.y,
 			duration: 150,
 			ease: "Linear",
 			// easeParams: [1.5, 0.5],
 			onComplete: function() {
-				// monster.life--;
+				// enemy.life--;
 				setTimeout(() => {
 					bullet.destroy();
-					// if (monster.life === 0) {
-					monster.destroy();
+					enemyGroup.remove(enemy, true, false);
+					// if (enemy.life === 0) {
 					// }
 				}, 10);
-				console.log(monster);
 			}
 		});
 		

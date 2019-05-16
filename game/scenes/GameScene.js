@@ -42,6 +42,13 @@ export default class GameScene extends Phaser.Scene {
 			key: 'map'
 		})
 
+		// Walkanimation for sprite
+		const monsterAnimation = this.anims.create({
+			key: 'walk',
+			frames: this.anims.generateFrameNumbers('monster'),
+			repeat: -1
+		});
+
 		// Set tiles
 		this.groundtiles = this.map.addTilesetImage('ground-plates')
 
@@ -60,27 +67,78 @@ export default class GameScene extends Phaser.Scene {
 		this.towers = towers;
 		this.arrayOfTowers = towers.getChildren();
 		this.input.on('pointerup', () => {
-			// Check if tower already exists on pointer position
-			if (!this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 16 && t.y === this.snapperWorldPoint.y + 16)) {
-				// Adding tower to towers group
-				let tower = new Tower({
-					scene: this,
-					x: this.snapperWorldPoint.x + 16, 
-					y: this.snapperWorldPoint.y + 16,
-					key: 'tower'
-				});
-				towers.add(tower);
-				console.log(tower);
+			// Check if tile is allowed to place tower on
+			let currentTile = this.map.getTileAtWorldXY((this.snapperWorldPoint.x + 16), (this.snapperWorldPoint.y + 16))
+			if (currentTile.properties.collide !== true) {
+				return;
 			}
+			// Check if tower already exists on pointer position
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 16 && t.y === this.snapperWorldPoint.y + 16)) {
+				return;
+			}
+			
+			// Adding tower to towers group
+			let tower = new Tower({
+				scene: this,
+				x: this.snapperWorldPoint.x + 16, 
+				y: this.snapperWorldPoint.y + 16,
+				key: 'tower'
+			});
+			towers.add(tower);
 		});
+		
 
-		// Enemies group
+		let offset = 0;
+		let path;
+
+		const spawn = (enemyObject) => {
+			enemyObject.children.entries.map(child => {
+				console.log(child);
+
+				path = this.add.path(child.x, child.y)
+					.lineTo(180, 200)
+					.lineTo(500, 200)
+					.lineTo(500, 360)
+					.lineTo(310, 360)
+					.lineTo(310, 640)
+
+				child.pathFollower = this.plugins.get('PathFollower').add(child, {
+					path: path, // path object
+					t: 0, // t: 0~1
+					rotateToPath: false
+					// rotationOffset: 0,
+					// angleOffset: 0
+				});
+				offset += 1500
+
+				this.tweens.add({
+					targets: child.pathFollower,
+					t: 1,
+					ease: 'Linear', // 'Cubic', 'Elastic', 'Bounce', 'Back'
+					duration: 10000 + offset,
+					repeat: 0, // -1: infinity
+					yoyo: false,
+					onComplete: function () {
+						child.destroy()
+					}
+				});
+				child.play('walk')
+			})
+		}
+
 		let enemies = this.add.group();
 		this.enemies = enemies;
+		let startOffset = 0;
+
 		for (let i = 0; i < 10; i++) {
-			let enemy = new Enemy(this, 180, 0, 'monster');
+			startOffset -= 400;
+			let enemy = new Enemy(this, 180, startOffset, 'monster');
 			enemies.add(enemy);
 		}
+
+		// Spawn enemy function 
+		console.log(enemies);
+		spawn(enemies);
 
 		 // BULLET
 		this.anims.create({
@@ -101,10 +159,10 @@ export default class GameScene extends Phaser.Scene {
 
 
 		if (this.towers.getLength() > 0 && this.enemies.getLength() > 0) {
+			console.log(this.arrayOfTowers);
 			this.arrayOfTowers.map(tower => {
 				tower.checkForEnemies();
 			});
 		}
-
 	}
 }

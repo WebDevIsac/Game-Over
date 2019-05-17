@@ -1,5 +1,5 @@
 // Map assets
-import map from '../assets/tilemaps/map-updated.json'
+import map from '../assets/tilemaps/larger-map.json'
 import tiles from '../assets/tilemaps/tuxmon-sample-32px.png'
 
 // Sprite and images
@@ -22,7 +22,7 @@ export default class GameScene extends Phaser.Scene {
 	preload() {
 		// Load map 
 		this.load.image('tuxmon-sample-32px', tiles);
-		this.load.tilemapTiledJSON('map-updated', map);
+		this.load.tilemapTiledJSON('larger-map', map);
 
 		// Load tower and bullet
 		this.load.image('tower', tower);
@@ -41,7 +41,7 @@ export default class GameScene extends Phaser.Scene {
 	create() {
 		// Create map
 		this.map = this.make.tilemap({
-			key: 'map-updated'
+			key: 'larger-map'
 		})
 
 		// Walkanimation for sprite
@@ -60,9 +60,9 @@ export default class GameScene extends Phaser.Scene {
 		// Set mouse marker
 		this.marker = this.add.graphics();
 		this.marker.lineStyle(5, 0xffffff, 1);
-		this.marker.strokeRect(0, 0, 32, 32);
+		this.marker.strokeRect(0, 0, 64, 64);
 		this.marker.lineStyle(3, 0xff4f78, 1);
-		this.marker.strokeRect(0, 0, 32, 32);
+		this.marker.strokeRect(0, 0, 64, 64);
 		
 		// Towers group
 		let towers = this.add.group();
@@ -93,19 +93,20 @@ export default class GameScene extends Phaser.Scene {
 
 		let offset = 0;
 		let path;
+		let speed;
 
 		const spawn = (enemyObject) => {
 			enemyObject.children.entries.map(child => {
 				path = this.add.path(child.x, child.y)
-					.lineTo(112, 304)
-					.lineTo(400, 304)
-					.lineTo(400, 80)
-					.lineTo(944, 80)
-					.lineTo(944, 720)
-					.lineTo(592, 720)
-					.lineTo(592, 496)
-					.lineTo(112, 496)
-					.lineTo(112, 784)
+					.lineTo(136, 280)
+					.lineTo(424, 280)
+					.lineTo(424, 120)
+					.lineTo(896, 120)
+					.lineTo(896, 632)
+					.lineTo(616, 632)
+					.lineTo(616, 504)
+					.lineTo(136, 504)
+					.lineTo(136, 784)
 
 				child.pathFollower = this.plugins.get('PathFollower').add(child, {
 					path: path, // path object
@@ -114,13 +115,14 @@ export default class GameScene extends Phaser.Scene {
 					// rotationOffset: 0,
 					// angleOffset: 0
 				});
-				offset += 1500
+				offset += 1500;
+				speed = 7500;
 
 				this.tweens.add({
 					targets: child.pathFollower,
 					t: 1,
 					ease: 'Linear', // 'Cubic', 'Elastic', 'Bounce', 'Back'
-					duration: 10000 + offset,
+					duration: speed + offset,
 					repeat: 0, // -1: infinity
 					yoyo: false,
 					onComplete: function () {
@@ -136,7 +138,7 @@ export default class GameScene extends Phaser.Scene {
 		let startOffset = 0;
 		let startPosX = 112;
 
-		for (let i = 0; i < 10; i++) {
+		for (let i = 0; i < 50; i++) {
 			startOffset -= 400;
 			let enemy = new Enemy(this, startPosX, startOffset, 'monster');
 			enemies.add(enemy);

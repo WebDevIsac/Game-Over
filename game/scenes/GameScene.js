@@ -3,7 +3,7 @@ import map from '../assets/tilemaps/larger-map.json'
 import tiles from '../assets/tilemaps/tuxmon-sample-32px.png'
 
 // Sprite and images
-import tower from '../assets/stone-tower-32px.png'
+import tower from '../assets/towers/stone-tower-64px.png'
 import bullet from '../assets/bullets/small-spike.png'
 import monster from '../assets/sprites/monster39x40.png'
 
@@ -70,20 +70,20 @@ export default class GameScene extends Phaser.Scene {
 		this.arrayOfTowers = towers.getChildren();
 		this.input.on('pointerup', () => {
 			// Check if tile is allowed to place tower on
-			let currentTile = this.map.getTileAtWorldXY((this.snapperWorldPoint.x + 16), (this.snapperWorldPoint.y + 16))
+			let currentTile = this.map.getTileAtWorldXY((this.snapperWorldPoint.x + 32), (this.snapperWorldPoint.y + 32))
 			if (currentTile.properties.collide === true) {
 				return;
 			}
 			// Check if tower already exists on pointer position
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 16 && t.y === this.snapperWorldPoint.y + 16)) {
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 32 && t.y === this.snapperWorldPoint.y + 32)) {
 				return;
 			}
 			
 			// Adding tower to towers group
 			let tower = new Tower({
 				scene: this,
-				x: this.snapperWorldPoint.x + 16, 
-				y: this.snapperWorldPoint.y + 16,
+				x: this.snapperWorldPoint.x + 32, 
+				y: this.snapperWorldPoint.y + 32,
 				key: 'tower'
 			});
 			towers.add(tower);

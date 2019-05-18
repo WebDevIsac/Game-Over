@@ -141,6 +141,7 @@ export default class GameScene extends Phaser.Scene {
 		for (let i = 0; i < 50; i++) {
 			startOffset -= 400;
 			let enemy = new Enemy(this, startPosX, startOffset, 'monster');
+			enemy.life = 5;
 			enemies.add(enemy);
 		}
 

@@ -13,7 +13,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
     }
 
     checkForEnemies() {
-        let towerRange = 100;
+        let towerRange = 200;
         this.scene.enemies.children.entries.map(enemy => {
             if (!this.disabled) {
                 let posY = this.y - enemy.y;
@@ -43,12 +43,12 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 			ease: "Linear",
 			// easeParams: [1.5, 0.5],
 			onComplete: function() {
-				// enemy.life--;
+				enemy.life--;
 				setTimeout(() => {
 					bullet.destroy();
-					enemyGroup.remove(enemy, true, false);
-					// if (enemy.life === 0) {
-					// }
+					if (enemy.life === 0) {
+					    enemyGroup.remove(enemy, true, false);
+					}
 				}, 10);
 			}
 		});

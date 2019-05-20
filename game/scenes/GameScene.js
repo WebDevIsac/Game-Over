@@ -98,8 +98,8 @@ export default class GameScene extends Phaser.Scene {
 		const spawn = (enemyObject) => {
 			enemyObject.children.entries.map(child => {
 				path = this.add.path(child.x, child.y)
-					.lineTo(136, 280)
-					.lineTo(424, 280)
+					.lineTo(136, 250)
+					.lineTo(424, 250)
 					.lineTo(424, 120)
 					.lineTo(896, 120)
 					.lineTo(896, 632)

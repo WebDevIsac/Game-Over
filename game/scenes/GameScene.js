@@ -63,22 +63,75 @@ export default class GameScene extends Phaser.Scene {
 		this.marker.strokeRect(0, 0, 64, 64);
 		this.marker.lineStyle(3, 0xff4f78, 1);
 		this.marker.strokeRect(0, 0, 64, 64);
+
+		const checkForTowers = () => {
+			// Check if current tile is not path
+			let currentTile = this.map.getTileAtWorldXY((this.snapperWorldPoint.x + 32), (this.snapperWorldPoint.y + 32))
+			if (currentTile.properties.collide === true) {
+				return false;
+			}
+			if (this.map.getTileAtWorldXY((this.snapperWorldPoint.x), (this.snapperWorldPoint.y)).properties.collide) {
+				return false;
+			}
+
+			// Check if tower already exists on pointer position
+
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 32 && t.y === this.snapperWorldPoint.y + 32)) {
+					return false;
+			}
+
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 32 && t.y === this.snapperWorldPoint.y)) {
+				return false;
+			}
+
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 32 && t.y === this.snapperWorldPoint.y + 64)) {
+				return false;
+			}
+
+
+			
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x && t.y === this.snapperWorldPoint.y + 32)) {
+				return false;
+			}
+
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x && t.y === this.snapperWorldPoint.y)) {
+				return false;
+			}
+
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x && t.y === this.snapperWorldPoint.y + 64)) {
+				return false;
+			}
+
+
+
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 64 && t.y === this.snapperWorldPoint.y + 32)) {
+					return false;
+			}
+				
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 64 && t.y === this.snapperWorldPoint.y)) {
+				return false;
+			}
+
+			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 64 && t.y === this.snapperWorldPoint.y + 64)) {
+				return false;
+			}
+
+
+
+			return true;
+		}
 		
 		// Towers group
 		let towers = this.add.group();
 		this.towers = towers;
 		this.arrayOfTowers = towers.getChildren();
 		this.input.on('pointerup', () => {
+			console.log(this.snapperWorldPoint);
 			// Check if tile is allowed to place tower on
-			let currentTile = this.map.getTileAtWorldXY((this.snapperWorldPoint.x + 32), (this.snapperWorldPoint.y + 32))
-			if (currentTile.properties.collide === true) {
-				return;
-			}
-			// Check if tower already exists on pointer position
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 32 && t.y === this.snapperWorldPoint.y + 32)) {
-				return;
-			}
 			
+			if (!checkForTowers()) {
+				return;
+			}
 			// Adding tower to towers group
 			let tower = new Tower({
 				scene: this,
@@ -87,7 +140,8 @@ export default class GameScene extends Phaser.Scene {
 				key: 'tower'
 			});
 			towers.add(tower);
-			console.log(tower);
+			console.log('x: ' + tower.x);
+			console.log('y: ' + tower.y);
 		});
 		
 

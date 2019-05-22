@@ -12,6 +12,10 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.scene.add.existing(this);
     }
 
+    checkForTowers() {
+        
+    }
+
     checkForEnemies() {
         let towerRange = 200;
         this.scene.enemies.children.entries.map(enemy => {

@@ -39,13 +39,21 @@ export default class GameScene extends Phaser.Scene {
 	}
 	
 	create() {
+		let startingCoins = 450;
+		let playerLife = 10;
+		this.player = {
+			coins: startingCoins,
+			life: playerLife
+		}
+
+		
 		// Create map
 		this.map = this.make.tilemap({
 			key: 'larger-map'
 		})
 
 		// Walkanimation for sprite
-		const monsterAnimation = this.anims.create({
+		const monsterAnimation =  this.anims.create({
 			key: 'walk',
 			frames: this.anims.generateFrameNumbers('monster'),
 			repeat: -1
@@ -65,59 +73,31 @@ export default class GameScene extends Phaser.Scene {
 		this.marker.strokeRect(0, 0, 64, 64);
 
 		const checkForTowers = () => {
-			// Check if current tile is not path
-			let currentTile = this.map.getTileAtWorldXY((this.snapperWorldPoint.x + 32), (this.snapperWorldPoint.y + 32))
-			if (currentTile.properties.collide === true) {
-				return false;
-			}
-			if (this.map.getTileAtWorldXY((this.snapperWorldPoint.x), (this.snapperWorldPoint.y)).properties.collide) {
-				return false;
-			}
+			// Check if current tile is not enemy path
+
+			// let currentTile = this.map.getTileAtWorldXY(this.snapperWorldPoint.x + 32, this.snapperWorldPoint.y + 32);
+
+			let posX = this.snapperWorldPoint.x;
+			let posY = this.snapperWorldPoint.y;
+			
+			if (this.map.getTileAtWorldXY(posX, posY).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX + 32, posY + 32).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX, posY + 32).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX + 32, posY).properties.collide) return false;
 
 			// Check if tower already exists on pointer position
-
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 32 && t.y === this.snapperWorldPoint.y + 32)) {
-					return false;
-			}
-
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 32 && t.y === this.snapperWorldPoint.y)) {
-				return false;
-			}
-
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 32 && t.y === this.snapperWorldPoint.y + 64)) {
-				return false;
-			}
-
-
+			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY + 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY + 64)) return false;
 			
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x && t.y === this.snapperWorldPoint.y + 32)) {
-				return false;
-			}
-
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x && t.y === this.snapperWorldPoint.y)) {
-				return false;
-			}
-
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x && t.y === this.snapperWorldPoint.y + 64)) {
-				return false;
-			}
-
-
-
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 64 && t.y === this.snapperWorldPoint.y + 32)) {
-					return false;
-			}
-				
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 64 && t.y === this.snapperWorldPoint.y)) {
-				return false;
-			}
-
-			if (this.arrayOfTowers.some(t => t.x === this.snapperWorldPoint.x + 64 && t.y === this.snapperWorldPoint.y + 64)) {
-				return false;
-			}
-
-
-
+			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY + 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY + 64)) return false;
+			
+			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY + 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY + 64)) return false;
+			
 			return true;
 		}
 		
@@ -126,12 +106,9 @@ export default class GameScene extends Phaser.Scene {
 		this.towers = towers;
 		this.arrayOfTowers = towers.getChildren();
 		this.input.on('pointerup', () => {
-			console.log(this.snapperWorldPoint);
 			// Check if tile is allowed to place tower on
-			
-			if (!checkForTowers()) {
-				return;
-			}
+			if (!checkForTowers()) return;
+			if (this.player.coins < 75) return;
 			// Adding tower to towers group
 			let tower = new Tower({
 				scene: this,
@@ -140,15 +117,16 @@ export default class GameScene extends Phaser.Scene {
 				key: 'tower'
 			});
 			towers.add(tower);
-			console.log('x: ' + tower.x);
-			console.log('y: ' + tower.y);
+
+			// Tower costs 75 coins
+			this.player.coins -= 75;
 		});
 		
-
+		
 		let offset = 0;
 		let path;
 		let speed;
-
+		
 		const spawn = (enemyObject) => {
 			enemyObject.children.entries.map(child => {
 				path = this.add.path(child.x, child.y)
@@ -161,7 +139,7 @@ export default class GameScene extends Phaser.Scene {
 					.lineTo(616, 504)
 					.lineTo(136, 504)
 					.lineTo(136, 784)
-
+					
 				child.pathFollower = this.plugins.get('PathFollower').add(child, {
 					path: path, // path object
 					t: 0, // t: 0~1
@@ -171,7 +149,7 @@ export default class GameScene extends Phaser.Scene {
 				});
 				offset += 1500;
 				speed = 7500;
-
+				
 				this.tweens.add({
 					targets: child.pathFollower,
 					t: 1,
@@ -180,13 +158,13 @@ export default class GameScene extends Phaser.Scene {
 					repeat: 0, // -1: infinity
 					yoyo: false,
 					onComplete: function () {
-						child.destroy()
+						child.destroy();
 					}
 				});
 				child.play('walk')
 			})
 		}
-
+		
 		let enemies = this.add.group();
 		this.enemies = enemies;
 		let startOffset = 0;
@@ -202,7 +180,7 @@ export default class GameScene extends Phaser.Scene {
 		// Spawn enemy function 
 		spawn(enemies);
 
-		 // BULLET
+		// BULLET
 		this.anims.create({
 			key: 'bullet',
 			frames: [{
@@ -213,13 +191,13 @@ export default class GameScene extends Phaser.Scene {
 	}
 	
 	update() {
+		
 		// Update mouse marker
 		this.worldPoint = this.input.activePointer;
 		this.pointerTileXY = this.groundlayer.worldToTileXY(this.worldPoint.x, this.worldPoint.y);
 		this.snapperWorldPoint = this.groundlayer.tileToWorldXY(this.pointerTileXY.x, this.pointerTileXY.y);
 		this.marker.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
-
-
+		
 		if (this.towers.getLength() > 0 && this.enemies.getLength() > 0) {
 			this.arrayOfTowers.map(tower => {
 				tower.checkForEnemies();

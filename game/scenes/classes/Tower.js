@@ -12,10 +12,6 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.scene.add.existing(this);
     }
 
-    checkForTowers() {
-        
-    }
-
     checkForEnemies() {
         let towerRange = 200;
         this.scene.enemies.children.entries.map(enemy => {
@@ -51,7 +47,8 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 				setTimeout(() => {
 					bullet.destroy();
 					if (enemy.life === 0) {
-					    enemyGroup.remove(enemy, true, false);
+                        enemyGroup.remove(enemy, true, false);
+                        this.parent.scene.player.coins += 15;
 					}
 				}, 10);
 			}

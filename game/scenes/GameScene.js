@@ -115,13 +115,12 @@ export default class GameScene extends Phaser.Scene {
 					return;
 				}
 				const currentEnemy = enemiesBeforeSpawn.shift();
-				console.log(currentEnemy);
 				spawn(currentEnemy, currentEnemy.children.entries[0].animName);
 				enemiesAfterSpawn.push(currentEnemy);
 			});
 
 		// Set mouse marker
-		this.marker = this.add.graphics();
+		this.circle = this.add.graphics();
 		this.marker.lineStyle(5, 0xffffff, 1);
 		this.marker.strokeRect(0, 0, 64, 64);
 		this.marker.lineStyle(3, 0xff4f78, 1);
@@ -202,7 +201,7 @@ export default class GameScene extends Phaser.Scene {
 					rotateToPath: false
 				});
 				offset += 1500;
-				speed = 1500;
+				speed = 10000;
 
 				this.tweens.add({
 					targets: child.pathFollower,
@@ -219,9 +218,6 @@ export default class GameScene extends Phaser.Scene {
 						} else {
 							child.destroy();
 						}
-						console.log("complete");
-						// child.destroy();
-						console.log(enemyObject.children.entries);
 					}
 				});
 				child.play(animationkey);

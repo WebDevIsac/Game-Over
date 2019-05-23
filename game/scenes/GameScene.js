@@ -7,6 +7,7 @@ import tower from "../assets/towers/stone-tower-64px.png";
 import bullet from "../assets/bullets/small-spike.png";
 import monster from "../assets/sprites/monster39x40.png";
 import dragon from "../assets/sprites/stormlord-dragon96x64.png";
+import tounge from "../assets/sprites/mon3_sprite_base.png";
 import goldImage from "../assets/sprites/gold.png";
 import heartImage from "../assets/sprites/heartFull.png";
 
@@ -44,6 +45,12 @@ export default class GameScene extends Phaser.Scene {
 			frameWidth: 96,
 			frameHeight: 64
 		});
+		this.load.spritesheet("tounge", tounge, {
+			frameWidth: 64,
+			frameHeight: 64,
+			startFrame: 0,
+			endFrame: 4
+		  });
 	}
 
 	create() {
@@ -68,6 +75,11 @@ export default class GameScene extends Phaser.Scene {
 		this.anims.create({
 			key: "dragonanim",
 			frames: this.anims.generateFrameNumbers("dragon"),
+			repeat: -1
+		});
+		this.anims.create({
+			key: "toungemonsteranim",
+			frames: this.anims.generateFrameNumbers("tounge"),
 			repeat: -1
 		});
 		this.anims.create({
@@ -134,8 +146,6 @@ export default class GameScene extends Phaser.Scene {
 		const checkForTowers = () => {
 			// Check if current tile is not enemy path
 
-			// let currentTile = this.map.getTileAtWorldXY(this.snapperWorldPoint.x + 32, this.snapperWorldPoint.y + 32);
-
 			let posX = this.snapperWorldPoint.x;
 			let posY = this.snapperWorldPoint.y;
 
@@ -201,7 +211,7 @@ export default class GameScene extends Phaser.Scene {
 					rotateToPath: false
 				});
 				offset += 1500;
-				speed = 10000;
+				speed = enemyObject.speed * 100;
 
 				this.tweens.add({
 					targets: child.pathFollower,
@@ -235,23 +245,26 @@ export default class GameScene extends Phaser.Scene {
 		this.enemiesBeforeSpawn = enemiesBeforeSpawn;
 		this.enemiesAfterSpawn = enemiesAfterSpawn;
 
-		let startOffset = 0;
+		let startOffset;
 		let startPosX = 112;
 
-		const createEnemies = (enemyName, enemyGroup, enemyType, animationName) => {
+		const createEnemies = (enemyName, enemyGroup, enemyType, animationName, groupSpeed) => {
+			startOffset = 0;
 			for (let i = 0; i < 10; i++) {
 				startOffset -= 300;
 				enemyName = new Enemy(this, startPosX, startOffset, enemyType);
 				enemyName.animName = animationName;
 				enemyGroup.add(enemyName);
+				enemyGroup.speed = groupSpeed;
 			}
 		};
 
 		// Creating and spawning enemies
-		createEnemies(monster, monsters, "monster", "monsteranim");
-		createEnemies(dragon, dragons, "dragon", "dragonanim");
-
+		createEnemies(monster, monsters, "monster", "monsteranim", 50);
+		createEnemies(dragon, dragons, "dragon", "dragonanim", 100);
+		createEnemies(tounge, tounges, "tounge", "toungemonsteranim", 100);
 		enemiesBeforeSpawn.push(monsters);
+		enemiesBeforeSpawn.push(tounges);
 		enemiesBeforeSpawn.push(dragons);
 	}
 

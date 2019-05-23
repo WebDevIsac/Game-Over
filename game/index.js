@@ -9,14 +9,13 @@ const config = {
 	type: Phaser.AUTO,
 	width: constants.WIDTH,
 	height: constants.HEIGHT,
-	scene: [StartScene, GameScene],
+	scene: [GameScene],
 	plugins: {
 		global: [{
-				key: 'PathFollower',
-				plugin: PathFollower,
-				start: true
-			},
-		]
+			key: 'PathFollower',
+			plugin: PathFollower,
+			start: true
+		}, ]
 	}
 };
 

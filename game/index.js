@@ -12,11 +12,10 @@ const config = {
 	scene: [/*StartScene, */GameScene],
 	plugins: {
 		global: [{
-				key: 'PathFollower',
-				plugin: PathFollower,
-				start: true
-			},
-		]
+			key: 'PathFollower',
+			plugin: PathFollower,
+			start: true
+		}, ]
 	}
 };
 

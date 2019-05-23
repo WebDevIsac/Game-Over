@@ -30,9 +30,13 @@ export default class StartScene extends Phaser.Scene {
         text.setInteractive().on('pointerup', () => {
             this.scene.start("GameScene");
         });
+
+        this.text = text;
     }
 
     update() {
-
+        setTimeout(() => {
+            this.text.text = 'New text';
+        }, 2000);
     }
 }

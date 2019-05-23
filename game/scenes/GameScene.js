@@ -16,271 +16,277 @@ import Enemy from "./classes/Enemy";
 import Tower from "./classes/Tower";
 
 export default class GameScene extends Phaser.Scene {
-  constructor() {
-    super({
-      key: "GameScene"
-    });
-  }
+	constructor() {
+		super({
+			key: "GameScene"
+		});
+	}
 
-  preload() {
-    // Load map
-    this.load.image("tuxmon-sample-32px", tiles);
-    this.load.tilemapTiledJSON("larger-map", map);
-    // Load Image
-    this.load.image("heart", heartImage);
-    this.load.image("gold", goldImage);
-    // Load tower and bullet
-    this.load.image("tower", tower);
-    this.load.spritesheet("bullet", bullet, {
-      frameWidth: 10,
-      frameHeight: 10
-    });
+	preload() {
+		// Load map
+		this.load.image("tuxmon-sample-32px", tiles);
+		this.load.tilemapTiledJSON("larger-map", map);
+		// Load Image
+		this.load.image("heart", heartImage);
+		this.load.image("gold", goldImage);
+		// Load tower and bullet
+		this.load.image("tower", tower);
+		this.load.spritesheet("bullet", bullet, {
+			frameWidth: 10,
+			frameHeight: 10
+		});
 
-    // Load monster
-    this.load.spritesheet("monster", monster, {
-      frameWidth: 39,
-      frameHeight: 40
-    });
-    this.load.spritesheet("dragon", dragon, {
-      frameWidth: 96,
-      frameHeight: 64
-    });
-    this.load.spritesheet("tounge", tounge, {
-      frameWidth: 64,
-      frameHeight: 64,
-      startFrame: 0,
-      endFrame: 4
-    });
-  }
+		// Load monster
+		this.load.spritesheet("monster", monster, {
+			frameWidth: 39,
+			frameHeight: 40
+		});
+		this.load.spritesheet("dragon", dragon, {
+			frameWidth: 96,
+			frameHeight: 64
+		});
+		this.load.spritesheet("tounge", tounge, {
+			frameWidth: 64,
+			frameHeight: 64,
+			startFrame: 0,
+			endFrame: 4
+		  });
+	}
 
-  create() {
-    // Create map
-    this.map = this.make.tilemap({
-      key: "larger-map"
-    });
+	create() {
+		let startingCoins = 450;
+		let playerLife = 10;
+		this.player = {
+			coins: startingCoins,
+			life: playerLife
+		};
 
-    // Animations
-    this.anims.create({
-      key: "monsteranim",
-      frames: this.anims.generateFrameNumbers("monster"),
-      repeat: -1
-    });
-    this.anims.create({
-      key: "dragonanim",
-      frames: this.anims.generateFrameNumbers("dragon"),
-      repeat: -1
-    });
-    this.anims.create({
-      key: "toungemonsteranim",
-      frames: this.anims.generateFrameNumbers("tounge"),
-      repeat: -1
-    });
-    this.anims.create({
-      key: "bullet",
-      frames: [
-        {
-          key: "bullet",
-          frame: 0
-        }
-      ]
-    });
+		// Create map
+		this.map = this.make.tilemap({
+			key: "larger-map"
+		});
 
-    // Set tiles
-    this.groundtiles = this.map.addTilesetImage("tuxmon-sample-32px");
+		// Animations
+		this.anims.create({
+			key: "monsteranim",
+			frames: this.anims.generateFrameNumbers("monster"),
+			repeat: -1
+		});
+		this.anims.create({
+			key: "dragonanim",
+			frames: this.anims.generateFrameNumbers("dragon"),
+			repeat: -1
+		});
+		this.anims.create({
+			key: "toungemonsteranim",
+			frames: this.anims.generateFrameNumbers("tounge"),
+			repeat: -1
+		});
+		this.anims.create({
+			key: "bullet",
+			frames: [{
+				key: "bullet",
+				frame: 0
+			}]
+		});
 
-    // Set layer
-    this.groundlayer = this.map.createStaticLayer(
-      "top",
-      this.groundtiles,
-      0,
-      0
-    );
+		// Set tiles
+		this.groundtiles = this.map.addTilesetImage("tuxmon-sample-32px");
 
-    // Side Menu
-    let hp = 10;
-    let goldAmount = 100;
-    let heartIcon = this.add.image(1100, 120, "heart");
-    let goldIcon = this.add.image(1100, 50, "gold").setScale(0.15);
+		// Set layer
+		this.groundlayer = this.map.createStaticLayer(
+			"top",
+			this.groundtiles,
+			0,
+			0
+		);
 
-    let hpText = this.add.text(1130, 100, hp, {
-      fontFamily: "Roboto",
-      fontSize: 32,
-      color: "#FFF"
-    });
+		// Side Menu
+		let hp = 10;
+		let goldAmount = 100;
+		let heartIcon = this.add.image(1100, 120, "heart");
+		let goldIcon = this.add.image(1100, 50, "gold").setScale(0.15);
 
-    let nextWaveText = this.add.text(1080, 150, "Next Wave", {
-      fontFamily: "Roboto",
-      fontSize: 32,
-      color: "#FFF"
-    });
+		let hpText = this.add.text(1130, 100, hp, {
+			fontFamily: "Roboto",
+			fontSize: 32,
+			color: "#FFF"
+		});
 
-    nextWaveText
-      .setInteractive()
-      .on("pointerdown", (pointer, localX, localY, event) => {
-        if (this.scene.systems.tweens._active.length > 0) {
-          console.log("NEJ");
-          return;
-        }
-        const currentEnemy = enemiesBeforeSpawn.shift();
-        console.log(currentEnemy);
-        spawn(currentEnemy, currentEnemy.children.entries[0].animName);
-        enemiesAfterSpawn.push(currentEnemy);
-      });
+		let nextWaveText = this.add.text(1080, 150, "Next Wave", {
+			fontFamily: "Roboto",
+			fontSize: 32,
+			color: "#FFF"
+		});
 
-    // Set mouse marker
-    this.marker = this.add.graphics();
-    this.marker.lineStyle(5, 0xffffff, 1);
-    this.marker.strokeRect(0, 0, 64, 64);
-    this.marker.lineStyle(3, 0xff4f78, 1);
-    this.marker.strokeRect(0, 0, 64, 64);
+		nextWaveText
+			.setInteractive()
+			.on("pointerdown", (pointer, localX, localY, event) => {
+				if (this.scene.systems.tweens._active.length > 0) {
+					console.log("NEJ");
+					return;
+				}
+				const currentEnemy = enemiesBeforeSpawn.shift();
+				spawn(currentEnemy, currentEnemy.children.entries[0].animName);
+				enemiesAfterSpawn.push(currentEnemy);
+			});
 
-    // Towers group
-    let towers = this.add.group();
-    this.towers = towers;
-    this.arrayOfTowers = towers.getChildren();
+		// Set mouse marker
+		this.circle = this.add.graphics();
+		this.marker.lineStyle(5, 0xffffff, 1);
+		this.marker.strokeRect(0, 0, 64, 64);
+		this.marker.lineStyle(3, 0xff4f78, 1);
+		this.marker.strokeRect(0, 0, 64, 64);
 
-    this.input.on("pointerup", () => {
-      // Check if tile is allowed to place tower on
-      let currentTile = this.map.getTileAtWorldXY(
-        this.snapperWorldPoint.x + 32,
-        this.snapperWorldPoint.y + 32
-      );
-      if (currentTile.properties.collide === true) {
-        return;
-      }
-      // Check if tower already exists on pointer position
-      if (
-        this.arrayOfTowers.some(
-          t =>
-            t.x === this.snapperWorldPoint.x + 32 &&
-            t.y === this.snapperWorldPoint.y + 32
-        )
-      ) {
-        return;
-      }
+		// Towers group
+		let towers = this.add.group();
+		this.towers = towers;
+		this.arrayOfTowers = towers.getChildren();
 
-      // Adding tower to towers group
-      let tower = new Tower({
-        scene: this,
-        x: this.snapperWorldPoint.x + 32,
-        y: this.snapperWorldPoint.y + 32,
-        key: "tower"
-      });
-      towers.add(tower);
-    });
+		const checkForTowers = () => {
+			// Check if current tile is not enemy path
 
-    let path;
-    let offset = 0;
-    let speed;
-    const spawn = (enemyObject, animationkey) => {
-      enemyObject.children.entries.map(child => {
-        path = this.add
-          .path(child.x, child.y)
-          .lineTo(136, 250)
-          .lineTo(424, 250)
-          .lineTo(424, 120)
-          .lineTo(896, 120)
-          .lineTo(896, 632)
-          .lineTo(616, 632)
-          .lineTo(616, 504)
-          .lineTo(136, 504)
-          .lineTo(136, 784);
+			let posX = this.snapperWorldPoint.x;
+			let posY = this.snapperWorldPoint.y;
 
-        child.pathFollower = this.plugins.get("PathFollower").add(child, {
-          path: path,
-          t: 0,
-          rotateToPath: false
-        });
-        offset += 1500;
-        speed = enemyObject.speed * 100;
-        console.log(speed);
+			if (this.map.getTileAtWorldXY(posX, posY).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX + 32, posY + 32).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX, posY + 32).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX + 32, posY).properties.collide) return false;
 
-        this.tweens.add({
-          targets: child.pathFollower,
-          t: 1,
-          ease: "Linear",
-          duration: speed + offset,
-          repeat: 0,
-          yoyo: false,
-          onComplete: function() {
-            if (enemyObject.children.entries.some(e => e == child)) {
-              child.destroy();
-              hp -= 1;
-              hpText.text = hp;
-            } else {
-              child.destroy();
-            }
-            console.log("complete");
-            // child.destroy();
-            console.log(enemyObject.children.entries);
-          }
-        });
-        child.play(animationkey);
-      });
-    };
+			// Check if tower already exists on pointer position
+			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY + 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY + 64)) return false;
 
-    // Enemy Groups
-    let monsters = this.add.group();
-    let dragons = this.add.group();
-    let tounges = this.add.group();
-    let enemiesBeforeSpawn = [];
-    let enemiesAfterSpawn = [];
+			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY + 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY + 64)) return false;
 
-    this.monsters = monsters;
-    this.dragons = dragons;
-    this.tounges = tounges;
-    console.log(this.monsters);
-    this.enemiesBeforeSpawn = enemiesBeforeSpawn;
-    this.enemiesAfterSpawn = enemiesAfterSpawn;
+			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY + 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY + 64)) return false;
 
-    let startOffset = 0;
-    let startPosX = 112;
+			return true;
+		}
 
-    const createEnemies = (
-      enemyName,
-      enemyGroup,
-      enemyType,
-      animationName,
-      groupSpeed
-    ) => {
-      startOffset = 0;
-      for (let i = 0; i < 10; i++) {
-        startOffset -= 300;
-        enemyName = new Enemy(this, startPosX, startOffset, enemyType);
-        enemyName.animName = animationName;
-        enemyGroup.add(enemyName);
-        enemyGroup.speed = groupSpeed;
-      }
-    };
+		this.input.on("pointerup", () => {
+			// Check if tile is allowed to place tower on
+			if (!checkForTowers()) return;
+			if (this.player.coins < 75) return;
+			// Adding tower to towers group
+			let tower = new Tower({
+				scene: this,
+				x: this.snapperWorldPoint.x + 32,
+				y: this.snapperWorldPoint.y + 32,
+				key: "tower"
+			});
+			towers.add(tower);
 
-    // Creating and spawning enemies
-    createEnemies(monster, monsters, "monster", "monsteranim", 50);
-    createEnemies(dragon, dragons, "dragon", "dragonanim", 100);
-    createEnemies(tounge, tounges, "tounge", "toungemonsteranim", 100);
-    enemiesBeforeSpawn.push(monsters);
-    enemiesBeforeSpawn.push(tounges);
-    enemiesBeforeSpawn.push(dragons);
-  }
+			// Tower costs 75 coins
+			this.player.coins -= 75;
+		});
 
-  update() {
-    // Update mouse marker
-    this.worldPoint = this.input.activePointer;
-    this.pointerTileXY = this.groundlayer.worldToTileXY(
-      this.worldPoint.x,
-      this.worldPoint.y
-    );
-    this.snapperWorldPoint = this.groundlayer.tileToWorldXY(
-      this.pointerTileXY.x,
-      this.pointerTileXY.y
-    );
-    this.marker.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
+		let path;
+		let speed;
+		let offset = 0;
 
-    this.enemiesAfterSpawn.map(group => {
-      if (this.towers.getLength() > 0 && group.getLength() > 0) {
-        this.arrayOfTowers.map(tower => {
-          tower.checkForEnemies(group);
-        });
-      }
-    });
-  }
+		const spawn = (enemyObject, animationkey) => {
+			enemyObject.children.entries.map(child => {
+				path = this.add
+					.path(child.x, child.y)
+					.lineTo(136, 250)
+					.lineTo(424, 250)
+					.lineTo(424, 120)
+					.lineTo(896, 120)
+					.lineTo(896, 632)
+					.lineTo(616, 632)
+					.lineTo(616, 504)
+					.lineTo(136, 504)
+					.lineTo(136, 784);
+
+				child.pathFollower = this.plugins.get("PathFollower").add(child, {
+					path: path,
+					t: 0,
+					rotateToPath: false
+				});
+				offset += 1500;
+				speed = enemyObject.speed * 100;
+
+				this.tweens.add({
+					targets: child.pathFollower,
+					t: 1,
+					ease: "Linear",
+					duration: speed + offset,
+					repeat: 0,
+					yoyo: false,
+					onComplete: function () {
+						if (enemyObject.children.entries.some(e => e == child)) {
+							child.destroy();
+							hp -= 1;
+							hpText.text = hp;
+						} else {
+							child.destroy();
+						}
+					}
+				});
+				child.play(animationkey);
+			});
+		};
+
+		// Enemy Groups
+		let monsters = this.add.group();
+		let dragons = this.add.group();
+		let enemiesBeforeSpawn = [];
+		let enemiesAfterSpawn = [];
+
+		this.monsters = monsters;
+		this.dragons = dragons;
+		this.enemiesBeforeSpawn = enemiesBeforeSpawn;
+		this.enemiesAfterSpawn = enemiesAfterSpawn;
+
+		let startOffset;
+		let startPosX = 112;
+
+		const createEnemies = (enemyName, enemyGroup, enemyType, animationName, groupSpeed) => {
+			startOffset = 0;
+			for (let i = 0; i < 10; i++) {
+				startOffset -= 300;
+				enemyName = new Enemy(this, startPosX, startOffset, enemyType);
+				enemyName.animName = animationName;
+				enemyGroup.add(enemyName);
+				enemyGroup.speed = groupSpeed;
+			}
+		};
+
+		// Creating and spawning enemies
+		createEnemies(monster, monsters, "monster", "monsteranim", 50);
+		createEnemies(dragon, dragons, "dragon", "dragonanim", 100);
+		createEnemies(tounge, tounges, "tounge", "toungemonsteranim", 100);
+		enemiesBeforeSpawn.push(monsters);
+		enemiesBeforeSpawn.push(tounges);
+		enemiesBeforeSpawn.push(dragons);
+	}
+
+	update() {
+		// Update mouse marker
+		this.worldPoint = this.input.activePointer;
+		this.pointerTileXY = this.groundlayer.worldToTileXY(
+			this.worldPoint.x,
+			this.worldPoint.y
+		);
+		this.snapperWorldPoint = this.groundlayer.tileToWorldXY(
+			this.pointerTileXY.x,
+			this.pointerTileXY.y
+		);
+		this.marker.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
+
+		this.enemiesAfterSpawn.map(group => {
+			if (this.towers.getLength() > 0 && group.getLength() > 0) {
+				this.arrayOfTowers.map(tower => {
+					tower.checkForEnemies(group);
+				});
+			}
+		});
+	}
 }

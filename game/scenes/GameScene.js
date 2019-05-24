@@ -5,9 +5,9 @@ import tiles from "../assets/tilemaps/tuxmon-sample-32px.png";
 // Sprite and images
 import tower from "../assets/towers/stone-tower-64px.png";
 import bullet from "../assets/bullets/small-spike.png";
-import monster from "../assets/sprites/monster39x40.png";
-import dragon from "../assets/sprites/stormlord-dragon96x64.png";
-import tounge from "../assets/sprites/mon3_sprite_base.png";
+import enemySpriteMonster from "../assets/sprites/monster39x40.png";
+import enemySpriteDragon from "../assets/sprites/stormlord-dragon96x64.png";
+import enemySpriteBlob from "../assets/sprites/mon3_sprite_base.png";
 import goldImage from "../assets/sprites/gold.png";
 import heartImage from "../assets/sprites/heartFull.png";
 
@@ -37,30 +37,23 @@ export default class GameScene extends Phaser.Scene {
 		});
 
 		// Load monster
-		this.load.spritesheet("monster", monster, {
+		this.load.spritesheet("monster", enemySpriteMonster, {
 			frameWidth: 39,
 			frameHeight: 40
 		});
-		this.load.spritesheet("dragon", dragon, {
+		this.load.spritesheet("dragon", enemySpriteDragon, {
 			frameWidth: 96,
 			frameHeight: 64
 		});
-		this.load.spritesheet("tounge", tounge, {
+		this.load.spritesheet("blob", enemySpriteBlob, {
 			frameWidth: 64,
 			frameHeight: 64,
 			startFrame: 0,
 			endFrame: 4
-		  });
+		});
 	}
 
 	create() {
-		let startingCoins = 450;
-		let playerLife = 10;
-		this.player = {
-			coins: startingCoins,
-			life: playerLife
-		};
-
 		// Create map
 		this.map = this.make.tilemap({
 			key: "larger-map"
@@ -78,8 +71,8 @@ export default class GameScene extends Phaser.Scene {
 			repeat: -1
 		});
 		this.anims.create({
-			key: "toungemonsteranim",
-			frames: this.anims.generateFrameNumbers("tounge"),
+			key: "blobanim",
+			frames: this.anims.generateFrameNumbers("blob"),
 			repeat: -1
 		});
 		this.anims.create({
@@ -102,13 +95,25 @@ export default class GameScene extends Phaser.Scene {
 		);
 
 		// Side Menu
-		let hp = 10;
-		let goldAmount = 100;
-		let goldIcon = this.add.image(1100, 50, "gold").setScale(0.15);
+		let startingGold = 450;
+		let playerLife = 10;
+
+		this.player = {
+			gold: startingGold,
+			life: playerLife
+		};
+
 		let heartIcon = this.add.image(1100, 120, "heart");
+		let goldIcon = this.add.image(1100, 50, "gold").setScale(0.15);
 		let towerIcon = this.add.image(1100, 300, 'tower');
 
-		let hpText = this.add.text(1130, 100, hp, {
+		let hpText = this.add.text(1130, 100, this.player.life, {
+			fontFamily: "Roboto",
+			fontSize: 32,
+			color: "#FFF"
+		});
+
+		let goldText = this.add.text(1125, 35, this.player.gold, {
 			fontFamily: "Roboto",
 			fontSize: 32,
 			color: "#FFF"
@@ -122,7 +127,6 @@ export default class GameScene extends Phaser.Scene {
 
 		nextWaveText.setInteractive().on("pointerdown", (pointer, localX, localY, event) => {
 			if (this.scene.systems.tweens._active.length > 0) {
-				console.log("NEJ");
 				return;
 			}
 			const currentEnemy = enemiesBeforeSpawn.shift();
@@ -165,10 +169,10 @@ export default class GameScene extends Phaser.Scene {
 
 			this.groundlayer.setInteractive().on("pointerdown", () => {
 				if (this.isMovingTower) {
-					console.log(this.isMovingTower);
+
 					// Check if tile is allowed to place tower on
 					if (!checkForTowers()) return;
-					if (this.player.coins < 75) return;
+					if (this.player.gold < 75) return;
 					// Adding tower to towers group
 					let tower = new Tower({
 						scene: this,
@@ -178,8 +182,9 @@ export default class GameScene extends Phaser.Scene {
 					});
 					towers.add(tower);
 
-					// Tower costs 75 coins
-					this.player.coins -= 75;
+					// Tower costs 75 gold
+					this.player.gold -= 75;
+					goldText.text = this.player.gold;
 
 					this.isMovingTower = false;
 					this.towerGrid.destroy();
@@ -190,7 +195,13 @@ export default class GameScene extends Phaser.Scene {
 			});
 		}
 
+		// Set mouse marker
+		this.marker = this.add.graphics();
 
+		this.marker.lineStyle(5, 0xffffff, 1);
+		this.marker.strokeRect(0, 0, 64, 64);
+		this.marker.lineStyle(3, 0xff4f78, 1);
+		this.marker.strokeRect(0, 0, 64, 64);
 
 		// Towers group
 		let towers = this.add.group();
@@ -224,8 +235,6 @@ export default class GameScene extends Phaser.Scene {
 			return true;
 		}
 
-
-
 		let path;
 		let speed;
 		let offset = 0;
@@ -250,8 +259,7 @@ export default class GameScene extends Phaser.Scene {
 					rotateToPath: false
 				});
 				offset += 1500;
-				speed = enemyObject.speed * 100;
-
+				speed = child.speed * 100;
 				this.tweens.add({
 					targets: child.pathFollower,
 					t: 1,
@@ -262,8 +270,8 @@ export default class GameScene extends Phaser.Scene {
 					onComplete: function () {
 						if (enemyObject.children.entries.some(e => e == child)) {
 							child.destroy();
-							hp -= 1;
-							hpText.text = hp;
+							playerLife -= 1;
+							hpText.text = playerLife;
 						} else {
 							child.destroy();
 						}
@@ -276,44 +284,69 @@ export default class GameScene extends Phaser.Scene {
 		// Enemy Groups
 		let monsters = this.add.group();
 		let dragons = this.add.group();
-		let tounges = this.add.group();
+		let blobs = this.add.group();
 		let enemiesBeforeSpawn = [];
 		let enemiesAfterSpawn = [];
 
 		this.monsters = monsters;
 		this.dragons = dragons;
-		this.tounges = tounges;
+		this.blobs = blobs;
 		this.enemiesBeforeSpawn = enemiesBeforeSpawn;
 		this.enemiesAfterSpawn = enemiesAfterSpawn;
 
 		let startOffset;
 		let startPosX = 112;
 
-		const createEnemies = (enemyName, enemyGroup, enemyType, animationName, groupSpeed) => {
+		const createEnemies = (
+			enemyName,
+			enemyGroup,
+			enemyType,
+			animationName,
+			groupSpeed,
+			enemyLife
+		) => {
 			startOffset = 0;
 			for (let i = 0; i < 10; i++) {
 				startOffset -= 300;
 				enemyName = new Enemy(this, startPosX, startOffset, enemyType);
 				enemyName.animName = animationName;
+				enemyName.speed = groupSpeed;
+				enemyName.life = enemyLife;
 				enemyGroup.add(enemyName);
-				enemyGroup.speed = groupSpeed;
+				// enemyGroup.speed = groupSpeed;
 			}
 		};
 
 		// Creating and spawning enemies
-		createEnemies(monster, monsters, "monster", "monsteranim", 50);
-		createEnemies(dragon, dragons, "dragon", "dragonanim", 100);
-		createEnemies(tounge, tounges, "tounge", "toungemonsteranim", 100);
+		createEnemies(
+			enemySpriteMonster,
+			monsters,
+			"monster",
+			"monsteranim",
+			50,
+			3
+		);
+
+		createEnemies(enemySpriteDragon, dragons, "dragon", "dragonanim", 100, 5);
+
+		createEnemies(enemySpriteBlob, blobs, "blob", "blobanim", 100, 4);
+
 		enemiesBeforeSpawn.push(monsters);
-		enemiesBeforeSpawn.push(tounges);
+		enemiesBeforeSpawn.push(blobs);
 		enemiesBeforeSpawn.push(dragons);
 	}
 
 	update() {
 		// Update mouse marker
 		this.worldPoint = this.input.activePointer;
-		this.pointerTileXY = this.groundlayer.worldToTileXY(this.worldPoint.x, this.worldPoint.y);
-		this.snapperWorldPoint = this.groundlayer.tileToWorldXY(this.pointerTileXY.x, this.pointerTileXY.y);
+		this.pointerTileXY = this.groundlayer.worldToTileXY(
+			this.worldPoint.x,
+			this.worldPoint.y
+		);
+		this.snapperWorldPoint = this.groundlayer.tileToWorldXY(
+			this.pointerTileXY.x,
+			this.pointerTileXY.y
+		);
 
 		if (this.isMovingTower) {
 			this.towerGrid.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
@@ -321,11 +354,10 @@ export default class GameScene extends Phaser.Scene {
 			this.circle.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
 		}
 
-		if (this.player.coins < 75) {
+		if (this.player.gold < 75) {
 			this.towerIcon.setAlpha(0.2);
 			this.towerIcon.disableInteractive();
-		}
-		else {
+		} else {
 			this.towerIcon.setAlpha(1);
 			this.towerIcon.setInteractive();
 		}

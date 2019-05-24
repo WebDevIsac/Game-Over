@@ -48,7 +48,8 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 					if (enemy.life === 0) {
 						enemyGroup.remove(enemy, true, false);
 						this.parent.scene.player.gold += 15;
-						this.parent.scene.children.list[4].text = this.parent.scene.player.gold
+						this.parent.scene.children.list
+						this.parent.scene.children.list[5].text = this.parent.scene.player.gold;
 					}
 				}, 10);
 			}

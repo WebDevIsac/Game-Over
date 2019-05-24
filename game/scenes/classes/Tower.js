@@ -34,7 +34,6 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 			y: tower.y - 12,
 			key: "bullet"
 		});
-
 		let tween = this.scene.tweens.add({
 			targets: bullet,
 			x: enemy.x,
@@ -42,13 +41,14 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 			duration: 150,
 			ease: "Linear",
 			// easeParams: [1.5, 0.5],
-			onComplete: function() {
+			onComplete: function () {
 				enemy.life--;
 				setTimeout(() => {
 					bullet.destroy();
 					if (enemy.life === 0) {
 						enemyGroup.remove(enemy, true, false);
-						this.parent.scene.player.coins += 15;
+						this.parent.scene.player.gold += 15;
+						this.parent.scene.children.list[4].text = this.parent.scene.player.gold
 					}
 				}, 10);
 			}

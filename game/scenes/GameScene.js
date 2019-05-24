@@ -133,6 +133,7 @@ export default class GameScene extends Phaser.Scene {
 		towerIcon.setInteractive().on("pointerdown", () => {
 			moveTower();
 		});
+		this.towerIcon = towerIcon;
 
 		this.isMovingTower = false;
 		const moveTower = () => {
@@ -163,26 +164,29 @@ export default class GameScene extends Phaser.Scene {
 			this.circle.strokeCircle(circle.x, circle.y, radius);
 
 			this.groundlayer.setInteractive().on("pointerdown", () => {
-				// Check if tile is allowed to place tower on
-				if (!checkForTowers()) return;
-				if (this.player.coins < 75) return;
-				// Adding tower to towers group
-				let tower = new Tower({
-					scene: this,
-					x: this.snapperWorldPoint.x,
-					y: this.snapperWorldPoint.y,
-					key: "tower"
-				});
-				towers.add(tower);
+				if (this.isMovingTower) {
+					console.log(this.isMovingTower);
+					// Check if tile is allowed to place tower on
+					if (!checkForTowers()) return;
+					if (this.player.coins < 75) return;
+					// Adding tower to towers group
+					let tower = new Tower({
+						scene: this,
+						x: this.snapperWorldPoint.x,
+						y: this.snapperWorldPoint.y,
+						key: "tower"
+					});
+					towers.add(tower);
 
-				// Tower costs 75 coins
-				this.player.coins -= 75;
+					// Tower costs 75 coins
+					this.player.coins -= 75;
 
-				this.isMovingTower = false;
-				this.towerGrid.destroy();
-				this.grid.destroy();
-				this.towerMouse.destroy();
-				this.circle.destroy();
+					this.isMovingTower = false;
+					this.towerGrid.destroy();
+					this.grid.destroy();
+					this.towerMouse.destroy();
+					this.circle.destroy();
+				}
 			});
 		}
 
@@ -315,6 +319,15 @@ export default class GameScene extends Phaser.Scene {
 			this.towerGrid.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
 			this.towerMouse.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
 			this.circle.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
+		}
+
+		if (this.player.coins < 75) {
+			this.towerIcon.setAlpha(0.2);
+			this.towerIcon.disableInteractive();
+		}
+		else {
+			this.towerIcon.setAlpha(1);
+			this.towerIcon.setInteractive();
 		}
 
 		this.enemiesAfterSpawn.map(group => {

@@ -8,12 +8,13 @@ import bullet from "../assets/bullets/small-spike.png";
 import enemySpriteMonster from "../assets/sprites/monster39x40.png";
 import enemySpriteDragon from "../assets/sprites/stormlord-dragon96x64.png";
 import enemySpriteBlob from "../assets/sprites/mon3_sprite_base.png";
+import enemySpriteBlob2 from "../assets/sprites/mon1_sprite.png";
 import goldImage from "../assets/sprites/gold.png";
 import heartImage from "../assets/sprites/heartFull.png";
 
 // Classes
-import Enemy from "./classes/Enemy";
-import Tower from "./classes/Tower";
+import Enemy from "../classes/Enemy";
+import Tower from "../classes/Tower";
 
 export default class GameScene extends Phaser.Scene {
 	constructor() {
@@ -51,10 +52,17 @@ export default class GameScene extends Phaser.Scene {
 			startFrame: 0,
 			endFrame: 4
 		});
+		this.load.spritesheet("blob2", enemySpriteBlob2, {
+			frameWidth: 50,
+			frameHeight: 50,
+			startFrame: 0,
+			endFrame: 4
+		});
 	}
 
 	create() {
 		// Create map
+
 		this.map = this.make.tilemap({
 			key: "larger-map"
 		});
@@ -73,6 +81,11 @@ export default class GameScene extends Phaser.Scene {
 		this.anims.create({
 			key: "blobanim",
 			frames: this.anims.generateFrameNumbers("blob"),
+			repeat: -1
+		});
+		this.anims.create({
+			key: "blobanim2",
+			frames: this.anims.generateFrameNumbers("blob2"),
 			repeat: -1
 		});
 		this.anims.create({
@@ -137,9 +150,11 @@ export default class GameScene extends Phaser.Scene {
 		towerIcon.setInteractive().on("pointerdown", () => {
 			moveTower();
 		});
+
 		this.towerIcon = towerIcon;
 
 		this.isMovingTower = false;
+
 		const moveTower = () => {
 			if (this.isMovingTower) {
 				this.isMovingTower = false;
@@ -182,7 +197,7 @@ export default class GameScene extends Phaser.Scene {
 					});
 					towers.add(tower);
 
-					// Tower costs 75 gold
+					// Towers cost 75 gold
 					this.player.gold -= 75;
 					goldText.text = this.player.gold;
 
@@ -285,12 +300,15 @@ export default class GameScene extends Phaser.Scene {
 		let monsters = this.add.group();
 		let dragons = this.add.group();
 		let blobs = this.add.group();
+		let blobs2 = this.add.group();
+
 		let enemiesBeforeSpawn = [];
 		let enemiesAfterSpawn = [];
 
 		this.monsters = monsters;
 		this.dragons = dragons;
 		this.blobs = blobs;
+		this.blobs2 = blobs2;
 		this.enemiesBeforeSpawn = enemiesBeforeSpawn;
 		this.enemiesAfterSpawn = enemiesAfterSpawn;
 
@@ -303,13 +321,17 @@ export default class GameScene extends Phaser.Scene {
 			enemyType,
 			animationName,
 			groupSpeed,
-			enemyLife
+			enemyLife,
+			enemyScale
 		) => {
 			startOffset = 0;
 			for (let i = 0; i < 10; i++) {
 				startOffset -= 300;
 				enemyName = new Enemy(this, startPosX, startOffset, enemyType);
 				enemyName.animName = animationName;
+				if (enemyScale) {
+					enemyName.setScale(enemyScale)
+				}
 				enemyName.speed = groupSpeed;
 				enemyName.life = enemyLife;
 				enemyGroup.add(enemyName);
@@ -318,21 +340,13 @@ export default class GameScene extends Phaser.Scene {
 		};
 
 		// Creating and spawning enemies
-		createEnemies(
-			enemySpriteMonster,
-			monsters,
-			"monster",
-			"monsteranim",
-			50,
-			3
-		);
-
+		createEnemies(enemySpriteMonster, monsters, "monster", "monsteranim", 100, 3, 1.2);
+		createEnemies(enemySpriteBlob, blobs, "blob", "blobanim", 100, 4, 1.5);
+		createEnemies(enemySpriteBlob2, blobs2, "blob2", "blobanim2", 100, 4, 1.5);
 		createEnemies(enemySpriteDragon, dragons, "dragon", "dragonanim", 100, 5);
-
-		createEnemies(enemySpriteBlob, blobs, "blob", "blobanim", 100, 4);
-
 		enemiesBeforeSpawn.push(monsters);
 		enemiesBeforeSpawn.push(blobs);
+		enemiesBeforeSpawn.push(blobs2);
 		enemiesBeforeSpawn.push(dragons);
 	}
 

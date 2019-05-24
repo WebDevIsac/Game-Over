@@ -104,8 +104,9 @@ export default class GameScene extends Phaser.Scene {
 		// Side Menu
 		let hp = 10;
 		let goldAmount = 100;
-		let heartIcon = this.add.image(1100, 120, "heart");
 		let goldIcon = this.add.image(1100, 50, "gold").setScale(0.15);
+		let heartIcon = this.add.image(1100, 120, "heart");
+		let towerIcon = this.add.image(1100, 300, 'tower');
 
 		let hpText = this.add.text(1130, 100, hp, {
 			fontFamily: "Roboto",
@@ -119,24 +120,73 @@ export default class GameScene extends Phaser.Scene {
 			color: "#FFF"
 		});
 
-		nextWaveText
-			.setInteractive()
-			.on("pointerdown", (pointer, localX, localY, event) => {
-				if (this.scene.systems.tweens._active.length > 0) {
-					console.log("NEJ");
-					return;
-				}
-				const currentEnemy = enemiesBeforeSpawn.shift();
-				spawn(currentEnemy, currentEnemy.children.entries[0].animName);
-				enemiesAfterSpawn.push(currentEnemy);
-			});
+		nextWaveText.setInteractive().on("pointerdown", (pointer, localX, localY, event) => {
+			if (this.scene.systems.tweens._active.length > 0) {
+				console.log("NEJ");
+				return;
+			}
+			const currentEnemy = enemiesBeforeSpawn.shift();
+			spawn(currentEnemy, currentEnemy.children.entries[0].animName);
+			enemiesAfterSpawn.push(currentEnemy);
+		});
 
-		// Set mouse marker
-		this.circle = this.add.graphics();
-		this.marker.lineStyle(5, 0xffffff, 1);
-		this.marker.strokeRect(0, 0, 64, 64);
-		this.marker.lineStyle(3, 0xff4f78, 1);
-		this.marker.strokeRect(0, 0, 64, 64);
+		towerIcon.setInteractive().on("pointerdown", () => {
+			moveTower();
+		});
+
+		this.isMovingTower = false;
+		const moveTower = () => {
+			if (this.isMovingTower) {
+				this.isMovingTower = false;
+				this.towerGrid.destroy();
+				this.grid.destroy();
+				this.towerMouse.destroy();
+				this.circle.destroy();
+				return;
+			}
+			this.isMovingTower = true;
+			this.towerGrid = this.add.grid(32, 32, 64, 64, 32, 32, 0xff4f, 0.5);
+
+			// Show tile grid
+			this.grid = this.add.grid(512, 384, 1024, 768, 32, 32, 0xffffff, 0).setOutlineStyle(0xff4f);
+
+			// Show tower image as marker
+			this.towerMouse = this.add.image(0, 0, 'tower');
+
+
+			// Show tower range
+			let circle = new Phaser.Geom.Point(0, 0);
+			let radius = 128;
+
+			this.circle = this.add.graphics();
+			this.circle.lineStyle(4, 0xff4f78, 1);
+			this.circle.strokeCircle(circle.x, circle.y, radius);
+
+			this.groundlayer.setInteractive().on("pointerdown", () => {
+				// Check if tile is allowed to place tower on
+				if (!checkForTowers()) return;
+				if (this.player.coins < 75) return;
+				// Adding tower to towers group
+				let tower = new Tower({
+					scene: this,
+					x: this.snapperWorldPoint.x,
+					y: this.snapperWorldPoint.y,
+					key: "tower"
+				});
+				towers.add(tower);
+
+				// Tower costs 75 coins
+				this.player.coins -= 75;
+
+				this.isMovingTower = false;
+				this.towerGrid.destroy();
+				this.grid.destroy();
+				this.towerMouse.destroy();
+				this.circle.destroy();
+			});
+		}
+
+
 
 		// Towers group
 		let towers = this.add.group();
@@ -150,42 +200,27 @@ export default class GameScene extends Phaser.Scene {
 			let posY = this.snapperWorldPoint.y;
 
 			if (this.map.getTileAtWorldXY(posX, posY).properties.collide) return false;
-			if (this.map.getTileAtWorldXY(posX + 32, posY + 32).properties.collide) return false;
-			if (this.map.getTileAtWorldXY(posX, posY + 32).properties.collide) return false;
-			if (this.map.getTileAtWorldXY(posX + 32, posY).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX - 32, posY - 32).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX, posY - 32).properties.collide) return false;
+			if (this.map.getTileAtWorldXY(posX - 32, posY).properties.collide) return false;
 
 			// Check if tower already exists on pointer position
-			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY + 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY - 32)) return false;
 			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY)) return false;
-			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY + 64)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX && t.y === posY + 32)) return false;
 
-			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY + 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX - 32 && t.y === posY - 32)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX - 32 && t.y === posY)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX - 32 && t.y === posY + 32)) return false;
+
+			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY - 32)) return false;
 			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY)) return false;
-			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY + 64)) return false;
-
-			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY + 32)) return false;
-			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY)) return false;
-			if (this.arrayOfTowers.some(t => t.x === posX + 64 && t.y === posY + 64)) return false;
+			if (this.arrayOfTowers.some(t => t.x === posX + 32 && t.y === posY + 32)) return false;
 
 			return true;
 		}
 
-		this.input.on("pointerup", () => {
-			// Check if tile is allowed to place tower on
-			if (!checkForTowers()) return;
-			if (this.player.coins < 75) return;
-			// Adding tower to towers group
-			let tower = new Tower({
-				scene: this,
-				x: this.snapperWorldPoint.x + 32,
-				y: this.snapperWorldPoint.y + 32,
-				key: "tower"
-			});
-			towers.add(tower);
 
-			// Tower costs 75 coins
-			this.player.coins -= 75;
-		});
 
 		let path;
 		let speed;
@@ -237,11 +272,13 @@ export default class GameScene extends Phaser.Scene {
 		// Enemy Groups
 		let monsters = this.add.group();
 		let dragons = this.add.group();
+		let tounges = this.add.group();
 		let enemiesBeforeSpawn = [];
 		let enemiesAfterSpawn = [];
 
 		this.monsters = monsters;
 		this.dragons = dragons;
+		this.tounges = tounges;
 		this.enemiesBeforeSpawn = enemiesBeforeSpawn;
 		this.enemiesAfterSpawn = enemiesAfterSpawn;
 
@@ -271,15 +308,14 @@ export default class GameScene extends Phaser.Scene {
 	update() {
 		// Update mouse marker
 		this.worldPoint = this.input.activePointer;
-		this.pointerTileXY = this.groundlayer.worldToTileXY(
-			this.worldPoint.x,
-			this.worldPoint.y
-		);
-		this.snapperWorldPoint = this.groundlayer.tileToWorldXY(
-			this.pointerTileXY.x,
-			this.pointerTileXY.y
-		);
-		this.marker.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
+		this.pointerTileXY = this.groundlayer.worldToTileXY(this.worldPoint.x, this.worldPoint.y);
+		this.snapperWorldPoint = this.groundlayer.tileToWorldXY(this.pointerTileXY.x, this.pointerTileXY.y);
+
+		if (this.isMovingTower) {
+			this.towerGrid.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
+			this.towerMouse.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
+			this.circle.setPosition(this.snapperWorldPoint.x, this.snapperWorldPoint.y);
+		}
 
 		this.enemiesAfterSpawn.map(group => {
 			if (this.towers.getLength() > 0 && group.getLength() > 0) {

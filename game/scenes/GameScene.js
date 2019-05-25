@@ -133,7 +133,7 @@ export default class GameScene extends Phaser.Scene {
 
 
 		// Side Menu
-		let startingGold = 450;
+		let startingGold = 150;
 		let playerLife = 10;
 		this.player = {
 			gold: startingGold,
@@ -162,14 +162,14 @@ export default class GameScene extends Phaser.Scene {
 			color: "#FFF"
 		});
 
-		nextWaveText.setInteractive().on("pointerdown", (pointer, localX, localY, event) => {
+		nextWaveText.setInteractive().on("pointerdown", () => {
+			const currentEnemy = enemiesBeforeSpawn.shift();
 			if (this.scene.systems.tweens._active.length > 0) {
 				console.log("not yet")
 				return;
 			}
-			console.log("spawned")
-			const currentEnemy = enemiesBeforeSpawn.shift();
 			spawn(currentEnemy, currentEnemy.children.entries[0].animName, this.scene);
+			console.log("spawned")
 			enemiesAfterSpawn.push(currentEnemy);
 		});
 
@@ -219,7 +219,7 @@ export default class GameScene extends Phaser.Scene {
 						scene: this,
 						x: this.snapperWorldPoint.x,
 						y: this.snapperWorldPoint.y,
-						key: "tower"
+						key: "tower",
 					});
 					towers.add(tower);
 
@@ -315,9 +315,8 @@ export default class GameScene extends Phaser.Scene {
 							child.destroy();
 							playerLife -= 1;
 							hpText.text = playerLife;
-							if (playerLife == 0) {
-								scene.stop(scene.key)
-								// this.scene.start("StartScene")
+							if (playerLife == 9) {
+								scene.start("EndScene");
 							}
 						} else {
 							child.destroy();
@@ -370,22 +369,24 @@ export default class GameScene extends Phaser.Scene {
 		};
 
 		// Creating and spawning enemies
-		createEnemies(enemySpriteMonster, monsterGroup, "monster", "monsteranim", 100, 3, 1.2);
-		createEnemies(enemySpriteBlob, blobGroup, "blob", "blobanim", 100, 4, 1.5);
-		createEnemies(enemySpriteBlob2, blobGroup2, "blob2", "blobanim2", 100, 4, 1.5);
-		createEnemies(enemySpriteDragon, dragonGroup, "dragon", "dragonanim", 100, 5);
-		createEnemies(enemySpriteMetalFace, metalfaceGroup, "metalface", "metalfaceanim", 100, 5, 0.7);
-		createEnemies(enemySpriteSkeleton, skeletonGroup, "skeleton", "skeletonanim", 100, 5, 1.3);
+		createEnemies(enemySpriteMonster, monsterGroup, "monster", "monsteranim", 120, 2, 1.2);
+		createEnemies(enemySpriteBlob, blobGroup, "blob", "blobanim", 120, 5, 1.5);
+		createEnemies(enemySpriteBlob2, blobGroup2, "blob2", "blobanim2", 20, 5, 1.5);
+		createEnemies(enemySpriteSkeleton, skeletonGroup, "skeleton", "skeletonanim", 100, 6, 1.3);
+		createEnemies(enemySpriteDragon, dragonGroup, "dragon", "dragonanim", 100, 7);
+		createEnemies(enemySpriteMetalFace, metalfaceGroup, "metalface", "metalfaceanim", 200, 10, 0.9);
 
-		enemiesBeforeSpawn.push(skeletonGroup)
-		enemiesBeforeSpawn.push(metalfaceGroup)
 		enemiesBeforeSpawn.push(monsterGroup);
 		enemiesBeforeSpawn.push(blobGroup);
 		enemiesBeforeSpawn.push(blobGroup2);
+		enemiesBeforeSpawn.push(skeletonGroup)
 		enemiesBeforeSpawn.push(dragonGroup);
+		enemiesBeforeSpawn.push(metalfaceGroup)
+
 	}
 
 	update() {
+
 		// Update mouse marker
 		this.worldPoint = this.input.activePointer;
 		this.pointerTileXY = this.groundlayer.worldToTileXY(

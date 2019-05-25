@@ -8,12 +8,16 @@ import bullet from "../assets/bullets/small-spike.png";
 import enemySpriteMonster from "../assets/sprites/monster39x40.png";
 import enemySpriteDragon from "../assets/sprites/stormlord-dragon96x64.png";
 import enemySpriteBlob from "../assets/sprites/mon3_sprite_base.png";
+import enemySpriteBlob2 from "../assets/sprites/mon1_sprite.png";
+import enemySpriteMetalFace from "../assets/sprites/metalface78x92.png";
+import enemySpriteSkeleton from "../assets/sprites/mon2_sprite_base.png";
 import goldImage from "../assets/sprites/gold.png";
 import heartImage from "../assets/sprites/heartFull.png";
 
+
 // Classes
-import Enemy from "./classes/Enemy";
-import Tower from "./classes/Tower";
+import Enemy from "../classes/Enemy";
+import Tower from "../classes/Tower";
 
 export default class GameScene extends Phaser.Scene {
 	constructor() {
@@ -51,10 +55,28 @@ export default class GameScene extends Phaser.Scene {
 			startFrame: 0,
 			endFrame: 4
 		});
+		this.load.spritesheet("blob2", enemySpriteBlob2, {
+			frameWidth: 50,
+			frameHeight: 50,
+			startFrame: 0,
+			endFrame: 4
+		});
+		this.load.spritesheet("skeleton", enemySpriteSkeleton, {
+			frameWidth: 64,
+			frameHeight: 64,
+			startFrame: 0,
+			endFrame: 3
+		});
+		this.load.spritesheet("metalface", enemySpriteMetalFace, {
+			frameWidth: 78,
+			frameHeight: 92,
+		});
 	}
 
 	create() {
+
 		// Create map
+
 		this.map = this.make.tilemap({
 			key: "larger-map"
 		});
@@ -76,6 +98,21 @@ export default class GameScene extends Phaser.Scene {
 			repeat: -1
 		});
 		this.anims.create({
+			key: "blobanim2",
+			frames: this.anims.generateFrameNumbers("blob2"),
+			repeat: -1
+		});
+		this.anims.create({
+			key: "skeletonanim",
+			frames: this.anims.generateFrameNumbers("skeleton"),
+			repeat: -1
+		});
+		this.anims.create({
+			key: "metalfaceanim",
+			frames: this.anims.generateFrameNumbers("metalface"),
+			repeat: -1
+		});
+		this.anims.create({
 			key: "bullet",
 			frames: [{
 				key: "bullet",
@@ -94,10 +131,10 @@ export default class GameScene extends Phaser.Scene {
 			0
 		);
 
+
 		// Side Menu
 		let startingGold = 450;
 		let playerLife = 10;
-
 		this.player = {
 			gold: startingGold,
 			life: playerLife
@@ -127,19 +164,23 @@ export default class GameScene extends Phaser.Scene {
 
 		nextWaveText.setInteractive().on("pointerdown", (pointer, localX, localY, event) => {
 			if (this.scene.systems.tweens._active.length > 0) {
+				console.log("not yet")
 				return;
 			}
+			console.log("spawned")
 			const currentEnemy = enemiesBeforeSpawn.shift();
-			spawn(currentEnemy, currentEnemy.children.entries[0].animName);
+			spawn(currentEnemy, currentEnemy.children.entries[0].animName, this.scene);
 			enemiesAfterSpawn.push(currentEnemy);
 		});
 
 		towerIcon.setInteractive().on("pointerdown", () => {
 			moveTower();
 		});
+
 		this.towerIcon = towerIcon;
 
 		this.isMovingTower = false;
+
 		const moveTower = () => {
 			if (this.isMovingTower) {
 				this.isMovingTower = false;
@@ -182,7 +223,7 @@ export default class GameScene extends Phaser.Scene {
 					});
 					towers.add(tower);
 
-					// Tower costs 75 gold
+					// Towers cost 75 gold
 					this.player.gold -= 75;
 					goldText.text = this.player.gold;
 
@@ -234,12 +275,13 @@ export default class GameScene extends Phaser.Scene {
 
 			return true;
 		}
-
 		let path;
 		let speed;
-		let offset = 0;
+		let offset;
 
-		const spawn = (enemyObject, animationkey) => {
+		const spawn = (enemyObject, animationkey, scene) => {
+			speed = 0;
+			offset = 0;
 			enemyObject.children.entries.map(child => {
 				path = this.add
 					.path(child.x, child.y)
@@ -259,7 +301,8 @@ export default class GameScene extends Phaser.Scene {
 					rotateToPath: false
 				});
 				offset += 1500;
-				speed = child.speed * 100;
+				console.log(enemyObject)
+				speed = enemyObject.speed * 100;
 				this.tweens.add({
 					targets: child.pathFollower,
 					t: 1,
@@ -272,6 +315,10 @@ export default class GameScene extends Phaser.Scene {
 							child.destroy();
 							playerLife -= 1;
 							hpText.text = playerLife;
+							if (playerLife == 0) {
+								scene.stop(scene.key)
+								// this.scene.start("StartScene")
+							}
 						} else {
 							child.destroy();
 						}
@@ -280,17 +327,18 @@ export default class GameScene extends Phaser.Scene {
 				child.play(animationkey);
 			});
 		};
-
 		// Enemy Groups
-		let monsters = this.add.group();
-		let dragons = this.add.group();
-		let blobs = this.add.group();
+		let monsterGroup = this.add.group();
+		let dragonGroup = this.add.group();
+		let blobGroup = this.add.group();
+		let blobGroup2 = this.add.group();
+		let skeletonGroup = this.add.group();
+		let metalfaceGroup = this.add.group();
+
 		let enemiesBeforeSpawn = [];
 		let enemiesAfterSpawn = [];
 
-		this.monsters = monsters;
-		this.dragons = dragons;
-		this.blobs = blobs;
+
 		this.enemiesBeforeSpawn = enemiesBeforeSpawn;
 		this.enemiesAfterSpawn = enemiesAfterSpawn;
 
@@ -303,37 +351,38 @@ export default class GameScene extends Phaser.Scene {
 			enemyType,
 			animationName,
 			groupSpeed,
-			enemyLife
+			enemyLife,
+			enemyScale
 		) => {
 			startOffset = 0;
 			for (let i = 0; i < 10; i++) {
 				startOffset -= 300;
 				enemyName = new Enemy(this, startPosX, startOffset, enemyType);
 				enemyName.animName = animationName;
-				enemyName.speed = groupSpeed;
+				if (enemyScale) {
+					enemyName.setScale(enemyScale)
+				}
+
 				enemyName.life = enemyLife;
 				enemyGroup.add(enemyName);
-				// enemyGroup.speed = groupSpeed;
+				enemyGroup.speed = groupSpeed;
 			}
 		};
 
 		// Creating and spawning enemies
-		createEnemies(
-			enemySpriteMonster,
-			monsters,
-			"monster",
-			"monsteranim",
-			50,
-			3
-		);
+		createEnemies(enemySpriteMonster, monsterGroup, "monster", "monsteranim", 100, 3, 1.2);
+		createEnemies(enemySpriteBlob, blobGroup, "blob", "blobanim", 100, 4, 1.5);
+		createEnemies(enemySpriteBlob2, blobGroup2, "blob2", "blobanim2", 100, 4, 1.5);
+		createEnemies(enemySpriteDragon, dragonGroup, "dragon", "dragonanim", 100, 5);
+		createEnemies(enemySpriteMetalFace, metalfaceGroup, "metalface", "metalfaceanim", 100, 5, 0.7);
+		createEnemies(enemySpriteSkeleton, skeletonGroup, "skeleton", "skeletonanim", 100, 5, 1.3);
 
-		createEnemies(enemySpriteDragon, dragons, "dragon", "dragonanim", 100, 5);
-
-		createEnemies(enemySpriteBlob, blobs, "blob", "blobanim", 100, 4);
-
-		enemiesBeforeSpawn.push(monsters);
-		enemiesBeforeSpawn.push(blobs);
-		enemiesBeforeSpawn.push(dragons);
+		enemiesBeforeSpawn.push(skeletonGroup)
+		enemiesBeforeSpawn.push(metalfaceGroup)
+		enemiesBeforeSpawn.push(monsterGroup);
+		enemiesBeforeSpawn.push(blobGroup);
+		enemiesBeforeSpawn.push(blobGroup2);
+		enemiesBeforeSpawn.push(dragonGroup);
 	}
 
 	update() {
@@ -361,7 +410,6 @@ export default class GameScene extends Phaser.Scene {
 			this.towerIcon.setAlpha(1);
 			this.towerIcon.setInteractive();
 		}
-
 		this.enemiesAfterSpawn.map(group => {
 			if (this.towers.getLength() > 0 && group.getLength() > 0) {
 				this.arrayOfTowers.map(tower => {

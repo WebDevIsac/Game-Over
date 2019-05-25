@@ -44,6 +44,10 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 			// easeParams: [1.5, 0.5],
 			onComplete: function () {
 				enemy.life--;
+				enemy.setTint(0xFF0000)
+				setTimeout(() => {
+					enemy.clearTint()
+				}, 80);
 				setTimeout(() => {
 					bullet.destroy();
 					if (enemy.life === 0) {

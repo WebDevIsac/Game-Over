@@ -14,6 +14,7 @@ import enemySpriteSkeleton from "../assets/sprites/mon2_sprite_base.png";
 import goldImage from "../assets/sprites/gold.png";
 import heartImage from "../assets/sprites/heartFull.png";
 
+
 // Classes
 import Enemy from "../classes/Enemy";
 import Tower from "../classes/Tower";
@@ -163,8 +164,10 @@ export default class GameScene extends Phaser.Scene {
 
 		nextWaveText.setInteractive().on("pointerdown", (pointer, localX, localY, event) => {
 			if (this.scene.systems.tweens._active.length > 0) {
+				console.log("not yet")
 				return;
 			}
+			console.log("spawned")
 			const currentEnemy = enemiesBeforeSpawn.shift();
 			spawn(currentEnemy, currentEnemy.children.entries[0].animName, this.scene);
 			enemiesAfterSpawn.push(currentEnemy);
@@ -274,9 +277,11 @@ export default class GameScene extends Phaser.Scene {
 		}
 		let path;
 		let speed;
-		let offset = 0;
+		let offset;
 
 		const spawn = (enemyObject, animationkey, scene) => {
+			speed = 0;
+			offset = 0;
 			enemyObject.children.entries.map(child => {
 				path = this.add
 					.path(child.x, child.y)
@@ -296,7 +301,8 @@ export default class GameScene extends Phaser.Scene {
 					rotateToPath: false
 				});
 				offset += 1500;
-				speed = child.speed * 100;
+				console.log(enemyObject)
+				speed = enemyObject.speed * 100;
 				this.tweens.add({
 					targets: child.pathFollower,
 					t: 1,
@@ -356,10 +362,10 @@ export default class GameScene extends Phaser.Scene {
 				if (enemyScale) {
 					enemyName.setScale(enemyScale)
 				}
-				enemyName.speed = groupSpeed;
+
 				enemyName.life = enemyLife;
 				enemyGroup.add(enemyName);
-				// enemyGroup.speed = groupSpeed;
+				enemyGroup.speed = groupSpeed;
 			}
 		};
 
@@ -368,7 +374,7 @@ export default class GameScene extends Phaser.Scene {
 		createEnemies(enemySpriteBlob, blobGroup, "blob", "blobanim", 100, 4, 1.5);
 		createEnemies(enemySpriteBlob2, blobGroup2, "blob2", "blobanim2", 100, 4, 1.5);
 		createEnemies(enemySpriteDragon, dragonGroup, "dragon", "dragonanim", 100, 5);
-		createEnemies(enemySpriteMetalFace, metalfaceGroup, "metalface", "metalfaceanim", 150, 5, 0.7);
+		createEnemies(enemySpriteMetalFace, metalfaceGroup, "metalface", "metalfaceanim", 100, 5, 0.7);
 		createEnemies(enemySpriteSkeleton, skeletonGroup, "skeleton", "skeletonanim", 100, 5, 1.3);
 
 		enemiesBeforeSpawn.push(skeletonGroup)

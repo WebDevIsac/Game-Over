@@ -1,28 +1,36 @@
-import background from '../assets/start.png';
-
-export default class StartScene extends Phaser.Scene {
+export default class EndScene extends Phaser.Scene {
 	constructor() {
 		super({
-			key: 'StartScene'
+			key: 'EndScene'
 		});
 	}
 
 	preload() {
-		this.load.image('background', background);
+
 	}
 
 	create() {
 		let posX = this.cameras.main.centerX;
-		let posY = this.cameras.main.centerY;
-		let background = this.add.image(posX, posY, 'background');
-		let text = this.make.text({
+		let posY = this.cameras.main.centerY - 100;
+		this.make.text({
 			x: posX,
 			y: posY,
+			text: 'GAME OVER',
+			origin: 0.5,
+			style: {
+				fontSize: '80px',
+				fill: 'white',
+				align: 'center',
+			}
+		});
+		let text = this.make.text({
+			x: posX,
+			y: posY + 100,
 			text: 'New Game',
 			origin: 0.5,
 			style: {
 				fontSize: '60px',
-				fill: 'black',
+				fill: 'white',
 				align: 'center',
 			}
 		});

@@ -20,8 +20,8 @@ Starting server and client
 ## Testers
 
 -   Andre Broman
--   Samuel Johansson
 -   Fredrik Leemann
+-   Samuel Johansson
 -   Isa Areschoug
 
 Non-programmers:

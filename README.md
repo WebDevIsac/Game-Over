@@ -1,10 +1,16 @@
 # Game-Over
-Game assignment using any js framework
+-   Game assignment using phaser.js to build this tower defense game
+
+<img src="./game/assets/start.png" width="100%">
 
 ### Made by:
 
 -   Adrian Jungnelius - [@AdrianJung](https://github.com/AdrianJung)
 -   Isac Larsson - [@WebDevIsac](https://github.com/WebDevIsac)
+
+## Usage
+
+-   [Play Game](https://tower-defense-game.netlify.com/) hosted with [Netlify](https://www.netlify.com/)
 
 ## Installation
 
@@ -22,10 +28,10 @@ Starting server and client
 
 ## Testers
 
--   Andre Broman
--   Fredrik Leemann
--   Samuel Johansson
--   Isa Areschoug
+-   [André Broman](https://github.com/brooman)
+-   [Fredrik Leemann](https://github.com/freddan88)
+-   [Samuel Johansson](https://github.com/WebSamuel90)
+-   [Isa Areschoug](https://github.com/Neyrin)
 
 Non-programmers:
 
@@ -35,16 +41,16 @@ Non-programmers:
 -   Simon Boman
 
 ### Comments by group 03
-- Well commented code
-- Well and consistently indented
-- Easily understandable variable names
-- Good structure and division of files
-- __game/assets/sprites__ - Inconsistant use of snake- and kebab-case in filenames
-- __index.html:14__ - Phaser seems to be installed using npm _and_ imported via cdn
-- __app/style__ - Folder seems redundant
-- __scenes/StartScene.js:37 & scenes/EndScene.js:46__ - Empty unexplained Update-function
-- __GameScene.js:207__ - Great use of grid
-- __GameScene.js:204__ - Code left commented out
+-   Well commented code
+-   Well and consistently indented
+-   Easily understandable variable names
+-   Good structure and division of files
+-   __game/assets/sprites__ - Inconsistant use of snake- and kebab-case in filenames
+-   __index.html:14__ - Phaser seems to be installed using npm _and_ imported via cdn
+-   __app/style__ - Folder seems redundant
+-   __scenes/StartScene.js:37 & scenes/EndScene.js:46__ - Empty unexplained Update-function
+-   __GameScene.js:207__ - Great use of grid
+-   __GameScene.js:204__ - Code left commented out
 
 ## Pull requests
 
@@ -66,3 +72,6 @@ Non-programmers:
 -   [#16 Added scaling to enemies, new enemy and moved class folder](https://github.com/AdrianJung/Game-Over/pull/16)
 -   [#17 Endscene](https://github.com/AdrianJung/Game-Over/pull/17)
 -   [#18 GameWon Scene and final fixes](https://github.com/AdrianJung/Game-Over/pull/18)
+-   [#19 Create README.md file](https://github.com/AdrianJung/Game-Over/pull/19)
+-   [#20 Update README.md with comments on code](https://github.com/AdrianJung/Game-Over/pull/20)
+-   [#21 Update README.md with latest pull request logs and adding github profiles](https://github.com/AdrianJung/Game-Over/pull/21)

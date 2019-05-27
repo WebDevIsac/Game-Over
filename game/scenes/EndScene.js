@@ -1,7 +1,7 @@
 export default class EndScene extends Phaser.Scene {
 	constructor() {
 		super({
-			key: 'EndScene'
+			key: "EndScene"
 		});
 	}
 
@@ -10,12 +10,14 @@ export default class EndScene extends Phaser.Scene {
 	}
 
 	create() {
+		let gameWon = this.scene.manager.scenes[0].gameWon;
 		let posX = this.cameras.main.centerX;
 		let posY = this.cameras.main.centerY - 100;
+		let textContent = gameWon ? 'GAME WON!' : 'GAME OVER';
 		this.make.text({
 			x: posX,
 			y: posY,
-			text: 'GAME OVER',
+			text: textContent,
 			origin: 0.5,
 			style: {
 				fontSize: '80px',
@@ -38,7 +40,6 @@ export default class EndScene extends Phaser.Scene {
 		text.setInteractive().on('pointerup', () => {
 			this.scene.start("GameScene");
 		});
-
 
 	}
 

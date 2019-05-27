@@ -142,7 +142,7 @@ export default class GameScene extends Phaser.Scene {
 
 		let heartIcon = this.add.image(1100, 120, "heart");
 		let goldIcon = this.add.image(1100, 50, "gold").setScale(0.15);
-		let towerIcon = this.add.image(1100, 300, 'tower');
+		let towerIcon = this.add.image(1100, 340, 'tower');
 
 		let hpText = this.add.text(1130, 100, this.player.life, {
 			fontFamily: "Roboto",
@@ -161,15 +161,20 @@ export default class GameScene extends Phaser.Scene {
 			fontSize: 32,
 			color: "#FFF"
 		});
+		this.nextWaveText = nextWaveText;
+
+		let towerCost = this.add.text(1086, 280, "75", {
+			fontFamily: "Roboto",
+			fontSize: 24,
+			color: "#FFF"
+		});
 
 		nextWaveText.setInteractive().on("pointerdown", () => {
 			const currentEnemy = enemiesBeforeSpawn.shift();
 			if (this.scene.systems.tweens._active.length > 0) {
-				console.log("not yet")
 				return;
 			}
 			spawn(currentEnemy, currentEnemy.children.entries[0].animName, this.scene);
-			console.log("spawned")
 			enemiesAfterSpawn.push(currentEnemy);
 		});
 
@@ -191,7 +196,12 @@ export default class GameScene extends Phaser.Scene {
 				return;
 			}
 			this.isMovingTower = true;
+
+			// Show tower grid
 			this.towerGrid = this.add.grid(32, 32, 64, 64, 32, 32, 0xff4f, 0.5);
+
+			// Show path grid
+			// this.pathGrid = this.add.grid()
 
 			// Show tile grid
 			this.grid = this.add.grid(512, 384, 1024, 768, 32, 32, 0xffffff, 0).setOutlineStyle(0xff4f);
@@ -236,14 +246,6 @@ export default class GameScene extends Phaser.Scene {
 			});
 		}
 
-		// Set mouse marker
-		this.marker = this.add.graphics();
-
-		this.marker.lineStyle(5, 0xffffff, 1);
-		this.marker.strokeRect(0, 0, 64, 64);
-		this.marker.lineStyle(3, 0xff4f78, 1);
-		this.marker.strokeRect(0, 0, 64, 64);
-
 		// Towers group
 		let towers = this.add.group();
 		this.towers = towers;
@@ -278,6 +280,7 @@ export default class GameScene extends Phaser.Scene {
 		let path;
 		let speed;
 		let offset;
+		this.gameWon;
 
 		const spawn = (enemyObject, animationkey, scene) => {
 			speed = 0;
@@ -301,7 +304,6 @@ export default class GameScene extends Phaser.Scene {
 					rotateToPath: false
 				});
 				offset += 1500;
-				console.log(enemyObject)
 				speed = enemyObject.speed * 100;
 				this.tweens.add({
 					targets: child.pathFollower,
@@ -311,18 +313,25 @@ export default class GameScene extends Phaser.Scene {
 					repeat: 0,
 					yoyo: false,
 					onComplete: function () {
+						if (enemiesBeforeSpawn.length === 0) {
+							if (enemyObject.children.entries.length === 0) {
+								this.parent.scene.gameWon = true;
+								scene.start("EndScene");
+							}
+						}
 						if (enemyObject.children.entries.some(e => e == child)) {
 							child.destroy();
 							playerLife -= 1;
 							hpText.text = playerLife;
-							if (playerLife == 9) {
+							if (playerLife === 0) {
+								this.parent.scene.gameWon = false;
 								scene.start("EndScene");
 							}
 						} else {
 							child.destroy();
 						}
 					}
-				});
+				}, this);
 				child.play(animationkey);
 			});
 		};
@@ -336,7 +345,6 @@ export default class GameScene extends Phaser.Scene {
 
 		let enemiesBeforeSpawn = [];
 		let enemiesAfterSpawn = [];
-
 
 		this.enemiesBeforeSpawn = enemiesBeforeSpawn;
 		this.enemiesAfterSpawn = enemiesAfterSpawn;
@@ -411,6 +419,16 @@ export default class GameScene extends Phaser.Scene {
 			this.towerIcon.setAlpha(1);
 			this.towerIcon.setInteractive();
 		}
+
+		if (this.scene.systems.tweens._active.length > 0) {
+			this.nextWaveText.setAlpha(0.2);
+			this.nextWaveText.disableInteractive();
+		} else {
+			this.nextWaveText.setAlpha(1);
+			this.nextWaveText.setInteractive();
+		}
+
+
 		this.enemiesAfterSpawn.map(group => {
 			if (this.towers.getLength() > 0 && group.getLength() > 0) {
 				this.arrayOfTowers.map(tower => {
